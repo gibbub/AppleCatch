@@ -23,9 +23,9 @@ var appleGravityY = 0;
 var monkeySpawnInterval = 30000;
 
 // Upgrades
-var speedUpgrade = new Upgrade("speed", 8, 0, 200, "assets/level end/boots.png");
-var luckUpgrade = new Upgrade("luck", 10, 0, 1, "assets/level end/luck.png");
-var basketUpgrade = new Upgrade("basket", 12, 0, 0, "assets/level end/basket.png");
+var speedUpgrade = new Upgrade("speed", 8, 0, 200, "assets/level_end/boots.png");
+var luckUpgrade = new Upgrade("luck", 10, 0, 1, "assets/level_end/luck.png");
+var basketUpgrade = new Upgrade("basket", 12, 0, 0, "assets/level_end/basket.png");
 
 // Time-related vars
 var gamePaused = false;
@@ -48,9 +48,9 @@ function initializeGame() {
     monkeySpawnInterval = 30000;
     
     // Upgrades
-    speedUpgrade = new Upgrade("speed", 8, 0, 200, "assets/level end/boots.png");
-    luckUpgrade = new Upgrade("luck", 10, 0, 1, "assets/level end/luck.png");
-    basketUpgrade = new Upgrade("basket", 12, 0, 0, "assets/level end/basket.png");
+    speedUpgrade = new Upgrade("speed", 8, 0, 200, "assets/level_end/boots.png");
+    luckUpgrade = new Upgrade("luck", 10, 0, 1, "assets/level_end/luck.png");
+    basketUpgrade = new Upgrade("basket", 12, 0, 0, "assets/level_end/basket.png");
 
     gamePaused = false;
 }
@@ -102,9 +102,9 @@ class StartScreen extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('game-title', '/assets/start screen/game_title.png');
-        this.load.image('start-button', '/assets/start screen/start_button.png');
-        this.load.image('how-to-button', '/assets/start screen/how_to_button.png');
+        this.load.image('game-title', '/assets/start_screen/game_title.png');
+        this.load.image('start-button', '/assets/start_screen/start_button.png');
+        this.load.image('how-to-button', '/assets/start_screen/how_to_button.png');
     }
 
     create() {
@@ -154,8 +154,8 @@ class HowToPlay extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('how-to-title', 'assets/start screen/how_to_button.png');
-        this.load.image('how-to-play', 'assets/start screen/how_to_play.png');
+        this.load.image('how-to-title', 'assets/start_screen/how_to_button.png');
+        this.load.image('how-to-play', 'assets/start_screen/how_to_play.png');
         this.load.image('exit-button', 'assets/exit_button.png');
     }
 
@@ -229,7 +229,7 @@ class PauseGame extends Phaser.Scene {
 
     preload() {
         this.load.image('board', 'assets/blank_board.png');
-        this.load.image('how-to-play-button', 'assets/start screen/how_to_button.png');
+        this.load.image('how-to-play-button', 'assets/start_screen/how_to_button.png');
         this.load.image('exit-to-main', 'assets/exit_to_main_button.png');
         this.load.image('exit', 'assets/exit_button.png');
     }
@@ -315,11 +315,11 @@ class LevelEnd extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('level-end-board', 'assets/level end/level_end_board.png');
+        this.load.image('level-end-board', 'assets/level_end/level_end_board.png');
         this.load.image('boots', speedUpgrade.sprite);
         this.load.image('luck', luckUpgrade.sprite);
         this.load.image('basket', basketUpgrade.sprite);
-        this.load.image('next', 'assets/level end/next_level_button.png');
+        this.load.image('next', 'assets/level_end/next_level_button.png');
         this.load.image('apple', 'assets/apple.png');
     }
 
