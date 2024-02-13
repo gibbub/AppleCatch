@@ -1,4 +1,4 @@
-import Upgrade from "/Upgrade.js";
+import Upgrade from "./Upgrade.js";
 
 // Start Screen vars
 var start_button;
