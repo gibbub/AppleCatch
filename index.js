@@ -23,9 +23,9 @@ var appleGravityY = 0;
 var monkeySpawnInterval = 30000;
 
 // Upgrades
-var speedUpgrade = new Upgrade("speed", 8, 0, 200, "assets/level_end/boots.png");
-var luckUpgrade = new Upgrade("luck", 10, 0, 1, "assets/level_end/luck.png");
-var basketUpgrade = new Upgrade("basket", 12, 0, 0, "assets/level_end/basket.png");
+var speedUpgrade = new Upgrade("speed", 8, 0, 200, "assets/level_end/boots.PNG");
+var luckUpgrade = new Upgrade("luck", 10, 0, 1, "assets/level_end/luck.PNG");
+var basketUpgrade = new Upgrade("basket", 12, 0, 0, "assets/level_end/basket.PNG");
 
 // Time-related vars
 var gamePaused = false;
@@ -48,9 +48,9 @@ function initializeGame() {
     monkeySpawnInterval = 30000;
     
     // Upgrades
-    speedUpgrade = new Upgrade("speed", 8, 0, 200, "assets/level_end/boots.png");
-    luckUpgrade = new Upgrade("luck", 10, 0, 1, "assets/level_end/luck.png");
-    basketUpgrade = new Upgrade("basket", 12, 0, 0, "assets/level_end/basket.png");
+    speedUpgrade = new Upgrade("speed", 8, 0, 200, "assets/level_end/boots.PNG");
+    luckUpgrade = new Upgrade("luck", 10, 0, 1, "assets/level_end/luck.PNG");
+    basketUpgrade = new Upgrade("basket", 12, 0, 0, "assets/level_end/basket.PNG");
 
     gamePaused = false;
 }
@@ -154,9 +154,9 @@ class HowToPlay extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('how-to-title', 'assets/start_screen/how_to_button.png');
-        this.load.image('how-to-play', 'assets/start_screen/how_to_play.png');
-        this.load.image('exit-button', 'assets/exit_button.png');
+        this.load.image('how-to-title', 'assets/start_screen/how_to_button.PNG');
+        this.load.image('how-to-play', 'assets/start_screen/how_to_play.PNG');
+        this.load.image('exit-button', 'assets/exit_button.PNG');
     }
 
     create() {
@@ -228,10 +228,10 @@ class PauseGame extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('board', 'assets/blank_board.png');
-        this.load.image('how-to-play-button', 'assets/start_screen/how_to_button.png');
-        this.load.image('exit-to-main', 'assets/exit_to_main_button.png');
-        this.load.image('exit', 'assets/exit_button.png');
+        this.load.image('board', 'assets/blank_board.PNG');
+        this.load.image('how-to-play-button', 'assets/start_screen/how_to_button.PNG');
+        this.load.image('exit-to-main', 'assets/exit_to_main_button.PNG');
+        this.load.image('exit', 'assets/exit_button.PNG');
     }
 
     create() {
@@ -315,12 +315,12 @@ class LevelEnd extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('level-end-board', 'assets/level_end/level_end_board.png');
+        this.load.image('level-end-board', 'assets/level_end/level_end_board.PNG');
         this.load.image('boots', speedUpgrade.sprite);
         this.load.image('luck', luckUpgrade.sprite);
         this.load.image('basket', basketUpgrade.sprite);
-        this.load.image('next', 'assets/level_end/next_level_button.png');
-        this.load.image('apple', 'assets/apple.png');
+        this.load.image('next', 'assets/level_end/next_level_button.PNG');
+        this.load.image('apple', 'assets/apple.PNG');
     }
 
     create() {
@@ -439,12 +439,12 @@ class GamePlay extends Phaser.Scene {
     }
 
      preload() {
-        this.load.image('apple', 'assets/apple.png');
-        this.load.image('mush', 'assets/mush.png');
-        this.load.image('golden-apple', 'assets/golden_apple.png');
-        this.load.image('golden-mush', 'assets/golden_mush.png');
-        this.load.image('banana', 'assets/banana.png');
-        this.load.image('tree', 'assets/tree.png');
+        this.load.image('apple', 'assets/apple.PNG');
+        this.load.image('mush', 'assets/mush.PNG');
+        this.load.image('golden-apple', 'assets/golden_apple.PNG');
+        this.load.image('golden-mush', 'assets/golden_mush.PNG');
+        this.load.image('banana', 'assets/banana.PNG');
+        this.load.image('tree', 'assets/tree.PNG');
         this.load.image('tiles', 'assets/ground_tileset.png');
         this.load.tilemapTiledJSON('ground', 'assets/ground.json');
         this.load.spritesheet('player', 'assets/player/playerB' + basketUpgrade.degree + '.png', { frameWidth: 16 + 16*basketUpgrade.degree, frameHeight: 32});
