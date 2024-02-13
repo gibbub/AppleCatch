@@ -102,7 +102,7 @@ class StartScreen extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('game-title', 'AppleCatch/assets/start_screen/game_title.png');
+        this.load.image('game-title', 'assets/start_screen/game_title.png');
         this.load.image('start-button', 'assets/start_screen/start_button.png');
         this.load.image('how-to-button', 'assets/start_screen/how_to_button.png');
     }
