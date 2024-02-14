@@ -332,7 +332,6 @@ class LevelEnd extends Phaser.Scene {
 
         // End of level stats
         excessApples = score > applesNeeded ? score - applesNeeded : 0;
-        excessApples = 20;
 
         var grade = "Nice!";
         if (excessApples > 5) {
@@ -636,12 +635,17 @@ class GamePlay extends Phaser.Scene {
             player.anims.play('shock');
         }
         else {
+            // Applied when player walks over mushed apple
+            var speedPenalty = 1;
+            if (this.physics.overlap(player, apples)) {
+                speedPenalty = 0.7;
+            }
             if (cursors.left.isDown) {
-                player.setVelocityX(-speedUpgrade.effect);
+                player.setVelocityX(-speedUpgrade.effect * speedPenalty);
                 player.anims.play('left', true);
             }
             else if (cursors.right.isDown) {
-                player.setVelocityX(speedUpgrade.effect);
+                player.setVelocityX(speedUpgrade.effect * speedPenalty);
                 player.anims.play('right', true);
             }
             else {
@@ -657,6 +661,7 @@ class GamePlay extends Phaser.Scene {
                 player.setVelocityY(400);
             }            
         }
+
     }
 }
 
@@ -729,7 +734,7 @@ function processAppleCollision(player, apple) {
     if (player.body.touching.up && !apple.body.blocked.down) {
         collectApple(player, apple);
     }
-    else {
+    else if (apple.name != 'mush') {
         turnAppleToMush(apple);        
     }
 }
@@ -745,13 +750,15 @@ function collectApple(player, apple) {
 }
 
 function turnAppleToMush(apple) {
-    if (apple.name == "golden") {
-        apple.setTexture('golden-mush');
+    if (apple.name != "mush") {
+        if (apple.name == "golden") {
+            apple.setTexture('golden-mush');
+        }
+        else {
+            apple.setTexture('mush'); 
+        }
+        apple.name = "mush";
     }
-    else {
-        apple.setTexture('mush'); 
-    }
-
 }
 
 function formatTime(seconds) {
