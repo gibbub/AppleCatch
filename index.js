@@ -1,9 +1,5 @@
 import Upgrade from "./Upgrade.js";
 
-// Start Screen vars
-var start_button;
-var how_to_button;
-
 // Game play vars
 var player;
 var apples;
@@ -105,12 +101,23 @@ class StartScreen extends Phaser.Scene {
         this.load.image('game-title', 'assets/start_screen/game_title.PNG');
         this.load.image('start-button', 'assets/start_screen/start_button.PNG');
         this.load.image('how-to-button', 'assets/start_screen/how_to_button.PNG');
+        this.load.image('apple', 'assets/apple.PNG');
     }
 
     create() {
-        this.add.image(285, 219, 'game-title').setScale(3);
-        start_button = this.add.sprite(288, 425, 'start-button').setScale(3).setInteractive();
-        how_to_button = this.add.sprite(288, 625, 'how-to-button').setScale(3).setInteractive();
+        var game_title = this.add.image(285, 219, 'game-title').setScale(3).setInteractive();
+        var start_button = this.add.sprite(288, 425, 'start-button').setScale(3).setInteractive();
+        var how_to_button = this.add.sprite(288, 625, 'how-to-button').setScale(3).setInteractive();
+
+        // Spawn apples when Game Title is clicked
+        var startScreenApples = this.physics.add.group();
+        game_title.on('pointerdown', () => {
+            startScreenApples.create(game.input.activePointer.x, game.input.activePointer.y, 'apple')
+                            .setScale(3)
+                            .setVelocityY(Phaser.Math.Between(-100,-350))
+                            .setVelocityX(Phaser.Math.Between(-200,200))
+                            .setGravityY(appleGravityY);
+        });
 
         // Start Button Function        
         start_button.on('pointerdown', () => {
