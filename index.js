@@ -71,12 +71,12 @@ function setUpNextLevel() {
     var numMonkeysToSpawn = Math.floor(level/2);
     monkeySpawnInterval = 1000 * Phaser.Math.RoundTo(timelimit/(numMonkeysToSpawn+1), -2);
     
-    console.log("Level: " + `${level}`
-    + "\nnumApplesToSpawn: " + `${numApplesToSpawn}`
-    + "\n appleSpawnInterval: " + `${appleSpawnInterval}`
-    + "\n appleGravity: " + `${appleGravityY}`
-    + "\n numMonkeysToSpawn: " + `${numMonkeysToSpawn}`
-    + "\n monkeySpawnInterval: " + `${monkeySpawnInterval}`);
+    // console.log("Level: " + `${level}`
+    // + "\nnumApplesToSpawn: " + `${numApplesToSpawn}`
+    // + "\n appleSpawnInterval: " + `${appleSpawnInterval}`
+    // + "\n appleGravity: " + `${appleGravityY}`
+    // + "\n numMonkeysToSpawn: " + `${numMonkeysToSpawn}`
+    // + "\n monkeySpawnInterval: " + `${monkeySpawnInterval}`);
 }
 
 /**
@@ -332,6 +332,7 @@ class LevelEnd extends Phaser.Scene {
 
         // End of level stats
         excessApples = score > applesNeeded ? score - applesNeeded : 0;
+        excessApples = 20;
 
         var grade = "Nice!";
         if (excessApples > 5) {
@@ -447,7 +448,8 @@ class GamePlay extends Phaser.Scene {
         this.load.image('tree', 'assets/tree.PNG');
         this.load.image('tiles', 'assets/ground_tileset.png');
         this.load.tilemapTiledJSON('ground', 'assets/ground.json');
-        this.load.spritesheet('player', 'assets/player/playerB' + basketUpgrade.degree + '.png', { frameWidth: 16 + 16*basketUpgrade.degree, frameHeight: 32});
+        this.load.spritesheet('playerB0', 'assets/player/playerB0.png', { frameWidth: 16 + 16*basketUpgrade.degree, frameHeight: 32});
+        this.load.spritesheet('playerB1', 'assets/player/playerB1.png', { frameWidth: 32, frameHeight: 32});
         this.load.spritesheet('monkey', 'assets/monkey.png', { frameWidth: 96, frameHeight: 96});
     }
 
@@ -481,37 +483,75 @@ class GamePlay extends Phaser.Scene {
         
 
         // Player creation & animations
-        player = this.physics.add.sprite(288, 500, 'player');
+        var playerSprite = 'playerB' + basketUpgrade.degree;
+        player = this.physics.add.sprite(288, 500, playerSprite);
         player.setCollideWorldBounds(true);
         player.setBounce(0.2);
         player.setScale(4);
         player.body.setGravityY(1000);
 
-        this.anims.create({
-            key: 'left',
-            frames: this.anims.generateFrameNumbers('player', { start: 0, end: 2}),
-            frameRate: 10,
-            repeat: -1
-        });
+        if (!this.anims.exists('left')) {
+            
+            this.anims.create({
+                key: 'left',
+                frames: this.anims.generateFrameNumbers(playerSprite, { start: 0, end: 2}),
+                frameRate: 10,
+                repeat: -1
+            });
+    
+            this.anims.create({
+                key: 'still',
+                frames: [ { key: playerSprite, frame: 2 } ],
+                frameRate: 20
+            });
+    
+            this.anims.create({
+                key: 'right',
+                frames: this.anims.generateFrameNumbers(playerSprite, { start: 2, end: 4}),
+                frameRate: 10,
+                repeat: -1
+            });
+    
+            this.anims.create({
+                key: 'shock',
+                frames: [ { key: playerSprite, frame: 5 }],
+                frameRate: 1
+            });
+        }   // if basket purchase has been made
+        else if (this.anims.anims.entries.left.frames[0].textureKey != playerSprite) {
+            
+            this.anims.remove('left');
+            this.anims.remove('still');
+            this.anims.remove('right');
+            this.anims.remove('shock');
 
-        this.anims.create({
-            key: 'still',
-            frames: [ { key: 'player', frame: 2 } ],
-            frameRate: 20
-        });
+            this.anims.create({
+                key: 'left',
+                frames: this.anims.generateFrameNumbers(playerSprite, { start: 0, end: 2}),
+                frameRate: 10,
+                repeat: -1
+            });
+    
+            this.anims.create({
+                key: 'still',
+                frames: [ { key: playerSprite, frame: 2 } ],
+                frameRate: 20
+            });
+    
+            this.anims.create({
+                key: 'right',
+                frames: this.anims.generateFrameNumbers(playerSprite, { start: 2, end: 4}),
+                frameRate: 10,
+                repeat: -1
+            });
+    
+            this.anims.create({
+                key: 'shock',
+                frames: [ { key: playerSprite, frame: 5 }],
+                frameRate: 1
+            });
+        }
 
-        this.anims.create({
-            key: 'right',
-            frames: this.anims.generateFrameNumbers('player', { start: 2, end: 4}),
-            frameRate: 10,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'shock',
-            frames: [ { key: 'player', frame: 5 }],
-            frameRate: 1
-        });
 
 
         // Monkeys
@@ -519,30 +559,32 @@ class GamePlay extends Phaser.Scene {
         monkey_right = this.physics.add.staticSprite(335, 340, 'monkey').setScale(4);
         monkey_right.visible = false;
 
-        this.anims.create({
-            key: 'appear',
-            frames: this.anims.generateFrameNumbers('monkey', { start: 0, end: 1 }),
-            frameRate: 10
-        });
-
-        this.anims.create({
-            key: 'toss',
-            frames: this.anims.generateFrameNumbers('monkey', { start: 1, end: 3}),
-            frameRate: 8
-        });
-
-        this.anims.create({
-            key: 'idle',
-            frames: [ { key: 'monkey', frame: 1 }],
-            frameRate: 20
-        });
-
-        this.anims.create({
-            key: 'giggle',
-            frames: this.anims.generateFrameNumbers('monkey', { start: 5, end: 6 }),
-            frameRate: 10,
-            repeat: -1
-        });
+        if (!this.anims.exists('appear')) {
+            this.anims.create({
+                key: 'appear',
+                frames: this.anims.generateFrameNumbers('monkey', { start: 0, end: 1 }),
+                frameRate: 10
+            });
+    
+            this.anims.create({
+                key: 'toss',
+                frames: this.anims.generateFrameNumbers('monkey', { start: 1, end: 3}),
+                frameRate: 8
+            });
+    
+            this.anims.create({
+                key: 'idle',
+                frames: [ { key: 'monkey', frame: 1 }],
+                frameRate: 20
+            });
+    
+            this.anims.create({
+                key: 'giggle',
+                frames: this.anims.generateFrameNumbers('monkey', { start: 5, end: 6 }),
+                frameRate: 10,
+                repeat: -1
+            });
+        }
 
         // Spawn monkey
         monkeyIntervalID = setInterval( () => {

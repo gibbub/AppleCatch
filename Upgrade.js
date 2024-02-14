@@ -32,9 +32,8 @@ class Upgrade {
         if (this.name == "luck") {
             this.effect++;
         }
-        if (this.name == "basket") {
-            // TODO: Update player sprite
-        }
+
+        // The basket upgrade is handled through the degree value
     }
 
 } export default Upgrade;
