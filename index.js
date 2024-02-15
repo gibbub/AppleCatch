@@ -328,6 +328,8 @@ class LevelEnd extends Phaser.Scene {
         this.load.image('basket', basketUpgrade.sprite);
         this.load.image('next', 'assets/level_end/next_level_button.PNG');
         this.load.image('apple', 'assets/apple.PNG');
+        this.load.spritesheet('dance', 'assets/level_end/dance.png', { frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('amazing-text', 'assets/level_end/amazing.png', { frameWidth: 65, frameHeight: 32 });
     }
 
     create() {
@@ -337,21 +339,40 @@ class LevelEnd extends Phaser.Scene {
         basketUpgrade.icon = this.add.image(440, 500, 'basket').setScale(4).setInteractive();
         var next_button = this.add.image(375, 685, 'next').setScale(3.5).setInteractive();
 
+        // Text Animations
+        this.anims.create({
+            key: 'amazing',
+            frames: this.anims.generateFrameNumbers('amazing-text', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        // Dance animation
+        this.anims.create({
+            key: 'dance',
+            frames: this.anims.generateFrameNumbers('dance', { start: 0, end: 2 }),
+            frameRate: 8,
+            repeat: -1,
+            yoyo: 1
+        });
+
         // End of level stats
         excessApples = score > applesNeeded ? score - applesNeeded : 0;
+        //excessApples = 20;
 
-        var grade = "Nice!";
-        if (excessApples > 5) {
-            grade = "Amazing!";
+        if (excessApples > 5) { // AMAZING
+            this.physics.add.staticSprite(288, 180, 'amazing-text').setScale(3).anims.play('amazing');
+            var danceSprite = this.physics.add.staticSprite(400, 290,'dance').setScale(5);
+            danceSprite.anims.play('dance');
         }
         else if (score < applesNeeded) {
-            grade = "Too bad...";
-        }
-        var levelEndText = grade
-        + "\n\nApples needed: " + applesNeeded
-        + "\nApples caught: " + score
-        + "\nExcess apples: " + excessApples;
-        this.add.text(80, 150, levelEndText, level_end_text_style);
+
+        }        
+        var levelEndText = "APPLES..."
+        + "\n>NEEDED: " + applesNeeded
+        + "\n>CAUGHT: " + score
+        + "\n>EXCESS: " + excessApples;
+        this.add.text(75, 240, levelEndText, level_end_text_style);
 
         // Speed price
         speedUpgrade.priceText = this.add.text(110, 605, speedUpgrade.price, level_end_text_style);
