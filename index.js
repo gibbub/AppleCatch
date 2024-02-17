@@ -328,8 +328,12 @@ class LevelEnd extends Phaser.Scene {
         this.load.image('basket', basketUpgrade.sprite);
         this.load.image('next', 'assets/level_end/next_level_button.PNG');
         this.load.image('apple', 'assets/apple.PNG');
-        this.load.spritesheet('dance', 'assets/level_end/dance.png', { frameWidth: 32, frameHeight: 32 });
-        this.load.spritesheet('amazing-text', 'assets/level_end/amazing.png', { frameWidth: 65, frameHeight: 32 });
+        this.load.spritesheet('amazing-text', 'assets/level_end/amazing_text.png', { frameWidth: 65, frameHeight: 36 });
+        this.load.spritesheet('grandma-dance', 'assets/level_end/grandma_dance.png', { frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('nice-text', 'assets/level_end/nice_text.png', { frameWidth: 38, frameHeight: 32 });
+        this.load.spritesheet('player-dance', 'assets/player/playerB0.png', { frameWidth: 16, frameHeight: 32});
+        this.load.spritesheet('you-lose-text', 'assets/level_end/you_lose_text.png', { frameWidth: 74, frameHeight: 32 });
+        this.load.spritesheet('gameover-anim', 'assets/level_end/gameover_anim.png', { frameWidth: 32, frameHeight: 32 });
     }
 
     create() {
@@ -341,48 +345,76 @@ class LevelEnd extends Phaser.Scene {
 
         // Text Animations
         this.anims.create({
-            key: 'amazing',
-            frames: this.anims.generateFrameNumbers('amazing-text', { start: 0, end: 1 }),
+            key: 'amazing-text',
+            frames: this.anims.generateFrameNumbers('amazing-text', { start: 0, end: 14 }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'nice-text',
+            frames: this.anims.generateFrameNumbers('nice-text', { start: 0, end: 6 }),
             frameRate: 8,
             repeat: -1
         });
-
-        // Dance animation
         this.anims.create({
-            key: 'dance',
-            frames: this.anims.generateFrameNumbers('dance', { start: 0, end: 2 }),
+            key: 'you-lose-text',
+            frames: this.anims.generateFrameNumbers('you-lose-text', { start: 1, end: 0 }),
+            frameRate: 10,
+            repeat: 5
+        });
+
+        // Level end animations
+        this.anims.create({
+            key: 'grandma-dance',
+            frames: this.anims.generateFrameNumbers('grandma-dance', { start: 0, end: 2 }),
             frameRate: 8,
             repeat: -1,
             yoyo: 1
         });
+        this.anims.create({
+            key: 'player-dance',
+            frames: this.anims.generateFrameNumbers('player-dance', { start: 1, end: 3 }),
+            frameRate: 8,
+            repeat: -1,
+            yoyo: 1
+        });
+        this.anims.create({
+            key: 'gameover-anim',
+            frames: this.anims.generateFrameNumbers('gameover-anim', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
 
         // End of level stats
         excessApples = score > applesNeeded ? score - applesNeeded : 0;
-        //excessApples = 20;
 
-        if (excessApples > 5) { // AMAZING
-            this.physics.add.staticSprite(288, 180, 'amazing-text').setScale(3).anims.play('amazing');
-            var danceSprite = this.physics.add.staticSprite(400, 290,'dance').setScale(5);
-            danceSprite.anims.play('dance');
-        }
-        else if (score < applesNeeded) {
-
-        }        
         var levelEndText = "APPLES..."
         + "\n>NEEDED: " + applesNeeded
         + "\n>CAUGHT: " + score
         + "\n>EXCESS: " + excessApples;
         this.add.text(75, 240, levelEndText, level_end_text_style);
 
-        // Speed price
+        if (excessApples > 5) { // AMAZING
+            this.physics.add.staticSprite(288, 180, 'amazing-text').setScale(3).anims.play('amazing-text');
+            this.physics.add.staticSprite(400, 290,'dance').setScale(5).anims.play('grandma-dance');
+        }
+        else if (score < applesNeeded) { // YOU LOSE
+            this.physics.add.staticSprite(288, 180, 'you-lose-text').setScale(3).anims.play('you-lose-text');
+            this.physics.add.staticSprite(400, 300, 'gameover-anim').setScale(5).anims.play('gameover-anim');
+        }
+        else { // NICE
+            this.physics.add.staticSprite(288, 180, 'nice-text').setScale(3).anims.play('nice-text');
+            this.physics.add.staticSprite(400, 290, 'player-dance').setScale(5).anims.play('player-dance');
+        }
+
+
+        // Upgrade prices
         speedUpgrade.priceText = this.add.text(110, 605, speedUpgrade.price, level_end_text_style);
         this.add.image(160, 617, 'apple').setScale(2);
-
-        // Luck price
+        
         luckUpgrade.priceText = this.add.text(260, 605, luckUpgrade.price, level_end_text_style);
         this.add.image(310, 617, 'apple').setScale(2);
-
-        // Basket price
+        
         basketUpgrade.priceText = this.add.text(410, 605, basketUpgrade.price, level_end_text_style);
         this.add.image(460, 617, 'apple').setScale(2);
 
@@ -391,13 +423,13 @@ class LevelEnd extends Phaser.Scene {
         excessAppleText = this.add.text(150, 668, excessApples, level_end_text_style);
 
         // Upgrade Button functions
-        // Purchased upgrades update their respective variables
         var upgrades = [speedUpgrade, luckUpgrade, basketUpgrade];
         for (const currUpgrade of upgrades) {
             if (excessApples < currUpgrade.price) {
                 currUpgrade.priceText.setColor("#a00");
             }
             else {
+                // Purchased upgrades update their respective variables
                 currUpgrade.icon.on('pointerdown', function (pointer) {
                     excessApples = excessApples - currUpgrade.price;
                     currUpgrade.applyUpgradeToGame();
@@ -636,6 +668,19 @@ class GamePlay extends Phaser.Scene {
         // Controls
         cursors = this.input.keyboard.createCursorKeys();
 
+        // // For mouse / mobile game play
+        // this.input.on('pointerdown', () => {
+        //     console.log(game.input.activePointer.x);
+        //     if (game.input.activePointer.x < game.canvas.width/2) {
+        //         console.log("left");
+        //         player.setVelocityX(-speedUpgrade.effect);
+        //         player.anims.play('left', true);
+        //     }
+        //     else {
+        //         console.log("right");
+        //     }
+        // });
+
     }
 
 
@@ -687,7 +732,9 @@ class GamePlay extends Phaser.Scene {
 
             if (cursors.down.isDown) {
                 player.setVelocityY(400);
-            }            
+            }    
+            
+
         }
 
     }
