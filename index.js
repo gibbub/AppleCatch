@@ -11,6 +11,7 @@ var scoreText;
 var excessApples = 0;
 var excessAppleText;
 var level = 1;
+var stats;
 
 // Vars that change with each level
 var applesNeeded = 8;
@@ -19,9 +20,9 @@ var appleGravityY = 0;
 var monkeySpawnInterval = 30000;
 
 // Upgrades
-var speedUpgrade = new Upgrade("speed", 8, 0, 200, "assets/level_end/boots.PNG");
-var luckUpgrade = new Upgrade("luck", 10, 0, 1, "assets/level_end/luck.PNG");
-var basketUpgrade = new Upgrade("basket", 12, 0, 0, "assets/level_end/basket.PNG");
+var speedUpgrade;
+var luckUpgrade;
+var basketUpgrade;
 
 // Time-related vars
 var gamePaused = false;
@@ -42,6 +43,13 @@ function initializeGame() {
     appleSpawnInterval = 2000;
     appleGravityY = 0;
     monkeySpawnInterval = 30000;
+
+    stats = {
+        totalApples: 0,
+        goldenApples: 0,
+        upgradesPurchased: 0,
+        bananaHits: 0
+    };
     
     // Upgrades
     speedUpgrade = new Upgrade("speed", 8, 0, 200, "assets/level_end/boots.PNG");
@@ -49,6 +57,7 @@ function initializeGame() {
     basketUpgrade = new Upgrade("basket", 12, 0, 0, "assets/level_end/basket.PNG");
 
     gamePaused = false;
+    
 }
 
 /**
@@ -332,8 +341,6 @@ class LevelEnd extends Phaser.Scene {
         this.load.spritesheet('grandma-dance', 'assets/level_end/grandma_dance.png', { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('nice-text', 'assets/level_end/nice_text.png', { frameWidth: 38, frameHeight: 32 });
         this.load.spritesheet('player-dance', 'assets/player/playerB0.png', { frameWidth: 16, frameHeight: 32});
-        this.load.spritesheet('you-lose-text', 'assets/level_end/you_lose_text.png', { frameWidth: 74, frameHeight: 32 });
-        this.load.spritesheet('gameover-anim', 'assets/level_end/gameover_anim.png', { frameWidth: 32, frameHeight: 32 });
     }
 
     create() {
@@ -356,12 +363,6 @@ class LevelEnd extends Phaser.Scene {
             frameRate: 8,
             repeat: -1
         });
-        this.anims.create({
-            key: 'you-lose-text',
-            frames: this.anims.generateFrameNumbers('you-lose-text', { start: 1, end: 0 }),
-            frameRate: 10,
-            repeat: 5
-        });
 
         // Level end animations
         this.anims.create({
@@ -378,12 +379,6 @@ class LevelEnd extends Phaser.Scene {
             repeat: -1,
             yoyo: 1
         });
-        this.anims.create({
-            key: 'gameover-anim',
-            frames: this.anims.generateFrameNumbers('gameover-anim', { start: 0, end: 1 }),
-            frameRate: 8,
-            repeat: -1
-        });
 
         // End of level stats
         excessApples = score > applesNeeded ? score - applesNeeded : 0;
@@ -397,10 +392,6 @@ class LevelEnd extends Phaser.Scene {
         if (excessApples > 5) { // AMAZING
             this.physics.add.staticSprite(288, 180, 'amazing-text').setScale(3).anims.play('amazing-text');
             this.physics.add.staticSprite(400, 290,'dance').setScale(5).anims.play('grandma-dance');
-        }
-        else if (score < applesNeeded) { // YOU LOSE
-            this.physics.add.staticSprite(288, 180, 'you-lose-text').setScale(3).anims.play('you-lose-text');
-            this.physics.add.staticSprite(400, 300, 'gameover-anim').setScale(5).anims.play('gameover-anim');
         }
         else { // NICE
             this.physics.add.staticSprite(288, 180, 'nice-text').setScale(3).anims.play('nice-text');
@@ -435,6 +426,8 @@ class LevelEnd extends Phaser.Scene {
                     currUpgrade.applyUpgradeToGame();
                     currUpgrade.price = currUpgrade.price + 8;
                     currUpgrade.priceText.setText(currUpgrade.price);
+
+                    stats.upgradesPurchased++;
                 });
         
                 currUpgrade.icon.on('pointerover', function(pointer) {
@@ -490,6 +483,105 @@ class LevelEnd extends Phaser.Scene {
         excessAppleText.setText(excessApples);
     }
 }
+
+
+class GameOver extends Phaser.Scene {
+
+    constructor () {
+        super('GameOver');
+    }
+
+    preload() {
+        this.load.image('gameover-board', 'assets/vert_blank_board.png');
+        this.load.image('exit-to-main-button', 'assets/exit_to_main_button.PNG');
+        this.load.image('restart-button', 'assets/start_screen/start_button.PNG');
+        this.load.spritesheet('you-lose-text', 'assets/level_end/you_lose_text.png', { frameWidth: 74, frameHeight: 32 });
+        this.load.spritesheet('gameover-anim', 'assets/level_end/gameover_anim.png', { frameWidth: 32, frameHeight: 32 });
+    }
+
+    create() {
+        this.add.image(288, 400, 'gameover-board').setScale(5.5);
+        var exit_to_main_button = this.add.image(288, 675, 'exit-to-main-button').setScale(2.5).setInteractive();
+        var restart_button = this.add.image(288, 550, 'restart-button').setScale(2.5).setInteractive();
+        
+        this.anims.create({
+            key: 'you-lose-text',
+            frames: this.anims.generateFrameNumbers('you-lose-text', { start: 1, end: 0 }),
+            frameRate: 10,
+            repeat: 5
+        });
+        this.anims.create({
+            key: 'gameover-anim',
+            frames: this.anims.generateFrameNumbers('gameover-anim', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.physics.add.staticSprite(225, 190, 'you-lose-text').setScale(3).anims.play('you-lose-text');
+        this.physics.add.staticSprite(425, 180, 'gameover-anim').setScale(4).anims.play('gameover-anim');
+
+        var gameover_text_style = {
+            fontFamily: '"Pixelify Sans", sans-serif',
+            fontSize: '25px',
+            fill: '#4a1c1a',
+            stroke: '#c17f38',
+            strokeThickness: 3,
+            align: 'right',
+            wordWrap: { width: 375 }
+        }
+
+        var gameover_messages = [
+            "Level reached: " + level,
+            "Total apples caught: " + stats.totalApples,
+            "Golden apples caught: " + stats.goldenApples,
+            "Upgrades purchased: " + stats.upgradesPurchased,
+            "Bananas that hit: " + stats.bananaHits
+        ]
+        var i = 0;
+        setInterval(() => {
+            if (i < gameover_messages.length) {
+                this.add.text(100, 275 + i*30, gameover_messages[i], gameover_text_style);
+            }
+            else return;
+
+            i++;
+        }, 500);
+
+        // Restart Button function
+        restart_button.on('pointerdown', () => {
+            this.scene.stop();
+            initializeGame();
+            this.scene.start('GamePlay');  
+        });
+
+        restart_button.on('pointerover', function(pointer) {
+            this.setScale(2.4);
+        });
+
+        restart_button.on('pointerout', function (pointer) {
+            this.setScale(2.5);
+        });
+
+        // Exit To Main Button function
+        exit_to_main_button.on('pointerdown', () => {
+            this.scene.stop();
+            this.scene.start('StartScreen');
+        });
+
+        exit_to_main_button.on('pointerover', function(pointer) {
+            this.setScale(2.4);
+        });
+
+        exit_to_main_button.on('pointerout', function (pointer) {
+            this.setScale(2.5);
+        });
+    }
+
+    update() {
+
+    }
+}
+
 
 
 class GamePlay extends Phaser.Scene {
@@ -668,19 +760,6 @@ class GamePlay extends Phaser.Scene {
         // Controls
         cursors = this.input.keyboard.createCursorKeys();
 
-        // // For mouse / mobile game play
-        // this.input.on('pointerdown', () => {
-        //     console.log(game.input.activePointer.x);
-        //     if (game.input.activePointer.x < game.canvas.width/2) {
-        //         console.log("left");
-        //         player.setVelocityX(-speedUpgrade.effect);
-        //         player.anims.play('left', true);
-        //     }
-        //     else {
-        //         console.log("right");
-        //     }
-        // });
-
     }
 
 
@@ -689,8 +768,14 @@ class GamePlay extends Phaser.Scene {
         // Time
         if (this.initialTime === 0) {
             stopTimer();
-            this.scene.pause();
-            game.scene.start('LevelEnd');
+            if (score < applesNeeded) {
+                this.scene.stop();
+                game.scene.start('GameOver')
+            }
+            else {
+                this.scene.pause();
+                game.scene.start('LevelEnd');
+            }
         }
 
         // Pause Game
@@ -704,6 +789,9 @@ class GamePlay extends Phaser.Scene {
  
         // Player movement
         if (timeSinceHitByBanana < 50) {
+            if (timeSinceHitByBanana == 1) {
+                stats.bananaHits++;
+            }
             timeSinceHitByBanana++;
             player.anims.play('shock');
         }
@@ -734,7 +822,6 @@ class GamePlay extends Phaser.Scene {
                 player.setVelocityY(400);
             }    
             
-
         }
 
     }
@@ -818,10 +905,11 @@ function collectApple(player, apple) {
     apple.disableBody(true, true);
     if (apple.name == "golden") {
         score = score + 4;
+        stats.goldenApples++;
     }
     score++;
     scoreText.setText('SCORE: ' + score + '/' + applesNeeded);
-
+    stats.totalApples++;
 }
 
 function turnAppleToMush(apple) {
@@ -917,7 +1005,7 @@ var config = {
             debug: false
         }
     },
-    scene: [StartScreen, HowToPlay, GamePlay, LevelEnd, PauseGame]
+    scene: [StartScreen, HowToPlay, GamePlay, LevelEnd, GameOver, PauseGame]
 };
 
 var game = new Phaser.Game(config);
