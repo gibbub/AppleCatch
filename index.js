@@ -10,6 +10,7 @@ var right_button;
 var player;
 var apples;
 var monkey_right;
+var monkey_left;
 var bananas;
 var cursors;
 var score = 0;
@@ -768,6 +769,8 @@ class GamePlay extends Phaser.Scene {
         bananas = this.physics.add.group();
         monkey_right = this.physics.add.staticSprite(335, 340, 'monkey').setScale(4);
         monkey_right.visible = false;
+        monkey_left = this.physics.add.staticSprite(110, 260, 'monkey').setScale(4);
+        monkey_left.visible = false;
 
         if (!this.anims.exists('appear')) {
             this.anims.create({
@@ -918,7 +921,7 @@ class GamePlay extends Phaser.Scene {
                 else {
                     player.anims.play('still');
                 }
-                
+
                 jump_button.on('pointerdown', () => {
                     if (player.body.blocked.down) {
                         player.setVelocityY(-600);
@@ -966,9 +969,19 @@ function spawnApple() {
 }
 
 function spawnMonkey(scene) {
+    var monkeyToSpawn = monkey_right;
     if (!gamePaused) {
-        monkey_right.visible = true;
-        animateMonkey(scene, monkey_right);
+        if (monkey_right.visible && !monkey_left.visible) {
+            monkeyToSpawn = monkey_left;
+        }
+        if (monkey_left.visible && !monkey_right.visible) {
+            monkeyToSpawn = monkey_right;            
+        }
+        if (!(monkey_left.visible && monkey_right.visible)) {
+            monkeyToSpawn.visible = true;
+            animateMonkey(scene, monkeyToSpawn); 
+        }
+
     }
 }
 
@@ -995,7 +1008,7 @@ function animateMonkey(scene, monkey) {
 }
 
 function tossBanana(scene, monkey) {
-    var banana = bananas.create(375, 200, 'banana').setScale(3);
+    var banana = bananas.create(monkey.x+40, monkey.y-100, 'banana').setScale(3);
     banana.setVelocityX(player.x - banana.x);
     banana.setVelocityY(player.y - banana.y - 50);
 }
