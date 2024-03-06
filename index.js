@@ -1,5 +1,11 @@
 import Upgrade from "./Upgrade.js";
 
+// Mobile Play
+var mobilePlayOn = false;
+var jump_button;
+var left_button;
+var right_button;
+
 // Game play vars
 var player;
 var apples;
@@ -110,6 +116,7 @@ class StartScreen extends Phaser.Scene {
         this.load.image('game-title', 'assets/start_screen/game_title.PNG');
         this.load.image('start-button', 'assets/start_screen/start_button.PNG');
         this.load.image('how-to-button', 'assets/start_screen/how_to_button.PNG');
+        this.load.spritesheet('mobile-play-toggle', 'assets/mobile_play/mobile_play_options.png', { frameWidth: 64, frameHeight: 16 });
         this.load.image('apple', 'assets/apple.PNG');
     }
 
@@ -117,6 +124,7 @@ class StartScreen extends Phaser.Scene {
         var game_title = this.add.image(285, 219, 'game-title').setScale(3).setInteractive();
         var start_button = this.add.sprite(288, 425, 'start-button').setScale(3).setInteractive();
         var how_to_button = this.add.sprite(288, 625, 'how-to-button').setScale(3).setInteractive();
+        var mobile_play_toggle = this.add.sprite(288, 750, 'mobile-play-toggle').setScale(3).setInteractive();
 
         // Spawn apples when Game Title is clicked
         var startScreenApples = this.physics.add.group();
@@ -156,6 +164,32 @@ class StartScreen extends Phaser.Scene {
         how_to_button.on('pointerout', function (pointer) {
             this.setScale(3);
         });
+
+        // Mobile Play Toggle
+        this.anims.create({
+            key: 'mobile-play-off',
+            frames: [ { key: 'mobile-play-toggle', frame: 0 }],
+            frameRate: 1
+        });
+        this.anims.create({
+            key: 'mobile-play-on',
+            frames: [ { key: 'mobile-play-toggle', frame: 1}],
+            frameRate: 1
+        })
+        mobile_play_toggle.on('pointerdown', () => {
+            if (mobilePlayOn) {
+                mobilePlayOn = false;
+                mobile_play_toggle.anims.play('mobile-play-off');
+            }
+            else {
+                mobilePlayOn = true;
+                mobile_play_toggle.anims.play('mobile-play-on');
+            }
+        });
+
+        if (mobilePlayOn) {
+            mobile_play_toggle.anims.play('mobile-play-on');
+        }
         
     }
 }
@@ -248,6 +282,8 @@ class PauseGame extends Phaser.Scene {
         this.load.image('how-to-play-button', 'assets/start_screen/how_to_button.PNG');
         this.load.image('exit-to-main', 'assets/exit_to_main_button.PNG');
         this.load.image('exit', 'assets/exit_button.PNG');
+        this.load.spritesheet('mobile-play-toggle', 'assets/mobile_play/mobile_play_options.png', { frameWidth: 64, frameHeight: 16 });
+
     }
 
     create() {
@@ -255,7 +291,7 @@ class PauseGame extends Phaser.Scene {
         var exit_button = this.add.image(90, 185, 'exit').setScale(3).setInteractive();
         var how_to_button = this.add.image(288, 315, 'how-to-play-button').setScale(3).setInteractive();
         var exit_to_main_button = this.add.image(288, 475, 'exit-to-main').setScale(3).setInteractive();
-
+        var mobile_play_toggle = this.add.sprite(288, 625, 'mobile-play-toggle').setScale(3).setInteractive();
 
         // Exit Button function
         exit_button.on('pointerdown', () => {
@@ -305,6 +341,22 @@ class PauseGame extends Phaser.Scene {
         exit_to_main_button.on('pointerout', function (pointer) {
             this.setScale(3);
         });
+
+        // Mobile Play Toggle
+        mobile_play_toggle.on('pointerdown', () => {
+            if (mobilePlayOn) {
+                mobilePlayOn = false;
+                mobile_play_toggle.anims.play('mobile-play-off');
+            }
+            else {
+                mobilePlayOn = true;
+                mobile_play_toggle.anims.play('mobile-play-on');
+            }
+        });
+
+        if (mobilePlayOn) {
+            mobile_play_toggle.anims.play('mobile-play-on');
+        }
     }
 
     update() {
@@ -315,6 +367,7 @@ class PauseGame extends Phaser.Scene {
             this.scene.stop();
             game.scene.resume('GamePlay');
         }
+
     }
 }
 
@@ -602,6 +655,12 @@ class GamePlay extends Phaser.Scene {
         this.load.spritesheet('playerB0', 'assets/player/playerB0.png', { frameWidth: 16 + 16*basketUpgrade.degree, frameHeight: 32});
         this.load.spritesheet('playerB1', 'assets/player/playerB1.png', { frameWidth: 32, frameHeight: 32});
         this.load.spritesheet('monkey', 'assets/monkey.png', { frameWidth: 96, frameHeight: 96});
+
+        // Mobile Play
+        this.load.image('jump', 'assets/mobile_play/jump.PNG');
+        this.load.image('left', 'assets/mobile_play/left.PNG');
+        this.load.image('right', 'assets/mobile_play/right.PNG');
+        this.load.image('pause', 'assets/mobile_play/pause.PNG');
     }
 
      create() { 
@@ -760,6 +819,16 @@ class GamePlay extends Phaser.Scene {
         // Controls
         cursors = this.input.keyboard.createCursorKeys();
 
+        // Mobile Play
+        jump_button = this.add.image(188, 750, 'jump').setScale(4).setInteractive();
+        left_button = this.add.sprite(288, 750, 'left').setScale(4).setInteractive();
+        right_button = this.add.image(388, 750, 'right').setScale(4).setInteractive();
+        var pause_button = this.add.image(40, 790, 'pause').setScale(3).setInteractive();
+
+        pause_button.on('pointerdown', () => {
+            gamePaused = true;
+        });
+
     }
 
 
@@ -801,6 +870,7 @@ class GamePlay extends Phaser.Scene {
             if (this.physics.overlap(player, apples)) {
                 speedPenalty = 0.7;
             }
+
             if (cursors.left.isDown) {
                 player.setVelocityX(-speedUpgrade.effect * speedPenalty);
                 player.anims.play('left', true);
@@ -820,7 +890,43 @@ class GamePlay extends Phaser.Scene {
 
             if (cursors.down.isDown) {
                 player.setVelocityY(400);
-            }    
+            }
+
+            // Mobile Play
+            if (mobilePlayOn) {
+                left_button.visible = true;
+                right_button.visible = true;
+                jump_button.visible = true;
+
+                var pointer = game.input.activePointer;
+                if (pointer.isDown) {
+                    // There is definitely a better/proper way to handle this...
+                    // But this works for now. Ish.
+    
+                    // Move left
+                    if ((pointer.downX > 256 && pointer.downX < 320)
+                    && (pointer.downY > 718 && pointer.downY < 782)) {
+                        player.setVelocityX(-speedUpgrade.effect * speedPenalty);
+                        player.anims.play('left', true);
+                    }
+                    // Move right
+                    else if ((pointer.downX > 356 && pointer.downX < 420)
+                    && (pointer.downY > 718 && pointer.downY < 782)) {
+                        player.setVelocityX(speedUpgrade.effect * speedPenalty);
+                        player.anims.play('right', true);
+                    }
+                }
+                jump_button.on('pointerdown', () => {
+                    if (player.body.blocked.down) {
+                        player.setVelocityY(-600);
+                    }
+                });
+            }
+            else {
+                left_button.visible = false;
+                right_button.visible = false;
+                jump_button.visible = false;
+            }
             
         }
 
