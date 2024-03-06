@@ -77,7 +77,7 @@ function setUpNextLevel() {
     level++;
 
     applesNeeded = 4*level + 4;
-    applesNeeded = 2(level-1) + 8;
+    applesNeeded = 2*(level-1) + 8;
 
     var numApplesToSpawn = getNumApplesToSpawn();
     appleSpawnInterval = 1000 * Phaser.Math.RoundTo(timelimit/numApplesToSpawn, -2);
@@ -96,7 +96,7 @@ function getNumApplesToSpawn() {
     //     return Math.floor((0.4*level*level + Math.log(level) + 14) / (level/10));
     // }
     // return Math.floor(0.4*level*level + Math.log(level) + 14);
-    return Math.floor(2(level-1) + 12);
+    return Math.floor(2*(level-1) + 12 - (2*Math.floor(level/5)));
 }
 
 /**
@@ -281,7 +281,6 @@ class PauseGame extends Phaser.Scene {
         this.load.image('exit-to-main', 'assets/exit_to_main_button.PNG');
         this.load.image('exit', 'assets/exit_button.PNG');
         this.load.spritesheet('mobile-play-toggle', 'assets/mobile_play/mobile_play_options.png', { frameWidth: 64, frameHeight: 16 });
-
     }
 
     create() {
@@ -434,11 +433,21 @@ class LevelEnd extends Phaser.Scene {
         // End of level stats
         excessApples = score > applesNeeded ? score - applesNeeded : 0;
 
-        var levelEndText = "APPLES..."
-        + "\n>NEEDED: " + applesNeeded
-        + "\n>CAUGHT: " + score
-        + "\n>EXCESS: " + excessApples;
-        this.add.text(75, 240, levelEndText, level_end_text_style);
+        var levelEndText = [
+            "APPLES...",
+            ">NEEDED: " + applesNeeded,
+            ">CAUGHT: " + score,
+            ">EXCESS: " + excessApples
+        ]
+        var i = 0;
+        setInterval(() => {
+            if (i < levelEndText.length) {
+                this.add.text(75, 240 + i*30, levelEndText[i], level_end_text_style);
+            }
+            else return;
+
+            i++;
+        }, 500);
 
         if (excessApples > 5) { // AMAZING
             this.physics.add.staticSprite(288, 180, 'amazing-text').setScale(3).anims.play('amazing-text');
