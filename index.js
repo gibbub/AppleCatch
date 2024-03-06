@@ -881,7 +881,6 @@ class GamePlay extends Phaser.Scene {
             }
             else {
                 player.setVelocityX(0);
-                player.anims.play('still');
             }
 
             if (cursors.up.isDown && player.body.blocked.down) {
@@ -916,16 +915,25 @@ class GamePlay extends Phaser.Scene {
                         player.anims.play('right', true);
                     }
                 }
+                else {
+                    player.anims.play('still');
+                }
+                
                 jump_button.on('pointerdown', () => {
                     if (player.body.blocked.down) {
                         player.setVelocityY(-600);
                     }
                 });
+
             }
             else {
                 left_button.visible = false;
                 right_button.visible = false;
                 jump_button.visible = false;
+
+                if (player.body.velocity.x == 0) {
+                    player.anims.play('still');
+                }
             }
             
         }
