@@ -17,10 +17,10 @@ var score = 0;
 var scoreText;
 var excessApples = 0;
 var excessAppleText;
-var level = 1;
 var stats;
 
 // Vars that change with each level
+var level = 1;
 var applesNeeded = 8;
 var appleSpawnInterval = 2000;
 var appleGravityY = 0;
@@ -41,7 +41,9 @@ var appleIntervalID;
 var monkeyIntervalID;
 var timeouts = [];
 
-
+/**
+ * Sets up first level; all game vars are set to their defaults
+ */
 function initializeGame() {
     score = 0;
     excessApples = 0;
@@ -64,7 +66,6 @@ function initializeGame() {
     basketUpgrade = new Upgrade("basket", 12, 0, 0, "assets/level_end/basket.PNG");
 
     gamePaused = false;
-    
 }
 
 /**
@@ -76,19 +77,14 @@ function setUpNextLevel() {
     level++;
 
     applesNeeded = 4*level + 4;
+    applesNeeded = 2(level-1) + 8;
+
     var numApplesToSpawn = getNumApplesToSpawn();
     appleSpawnInterval = 1000 * Phaser.Math.RoundTo(timelimit/numApplesToSpawn, -2);
     appleGravityY = Math.floor(5*(level-1));
 
     var numMonkeysToSpawn = Math.floor(level/2);
     monkeySpawnInterval = 1000 * Phaser.Math.RoundTo(timelimit/(numMonkeysToSpawn+1), -2);
-    
-    // console.log("Level: " + `${level}`
-    // + "\nnumApplesToSpawn: " + `${numApplesToSpawn}`
-    // + "\n appleSpawnInterval: " + `${appleSpawnInterval}`
-    // + "\n appleGravity: " + `${appleGravityY}`
-    // + "\n numMonkeysToSpawn: " + `${numMonkeysToSpawn}`
-    // + "\n monkeySpawnInterval: " + `${monkeySpawnInterval}`);
 }
 
 /**
@@ -96,10 +92,11 @@ function setUpNextLevel() {
  * @returns {Number} apples to spawn
  */
 function getNumApplesToSpawn() {
-    if (level > 10) {
-        return Math.floor((0.4*level*level + Math.log(level) + 14) / (level/10));
-    }
-    return Math.floor(0.4*level*level + Math.log(level) + 14);
+    // if (level > 10) {
+    //     return Math.floor((0.4*level*level + Math.log(level) + 14) / (level/10));
+    // }
+    // return Math.floor(0.4*level*level + Math.log(level) + 14);
+    return Math.floor(2(level-1) + 12);
 }
 
 /**
