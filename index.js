@@ -116,6 +116,7 @@ class StartScreen extends Phaser.Scene {
         // Spawn apples when Game Title is clicked
         var startScreenApples = this.physics.add.group();
         game_title.on('pointerdown', () => {
+            Phaser.Math.Between(1,2) == 1 ? playSound("exit") : playSound("select");
             startScreenApples.create(game.input.activePointer.x, game.input.activePointer.y, 'apple')
                             .setScale(3)
                             .setVelocityY(Phaser.Math.Between(-100,-350))
