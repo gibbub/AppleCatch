@@ -209,10 +209,11 @@ class HowToPlay extends Phaser.Scene {
         var instructions =  
         "\n Grandma needs apples to make apple pies."
         +"\n How many can you catch?"
-        +"\n\n Beware of mischevious critters who try to distract you...";
+        +"\n\n Use extra apples to buy upgrades, or let them carry over to the next level."
+        +"\n Beware of mischevious critters who try to distract you...";
         this.make.text({
             x: 288, 
-            y: 340, 
+            y: 335, 
             text: instructions,
             origin: { x: 0.5, y: 0.5 },
             style: board_text_style
@@ -1134,13 +1135,14 @@ function playSound(name) {
 // Text styles
 var board_text_style = {
     fontFamily: '"Pixelify Sans", sans-serif',
-    fontSize: '30px',
+    fontSize: '25px',
     fill: '#4a1c1a',
     stroke: '#c17f38',
     strokeThickness: 3,
     align: 'center',
     wordWrap: { width: 375 }
 };
+
 
 var level_end_text_style = {
     fontFamily: '"Pixelify Sans", sans-serif',
