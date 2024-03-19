@@ -80,24 +80,12 @@ function setUpNextLevel() {
     applesNeeded = 4*level + 4;
     applesNeeded = 2*(level-1) + 8;
 
-    var numApplesToSpawn = getNumApplesToSpawn();
+    var numApplesToSpawn = Math.floor(2*(level-1) + 12 - (2*Math.floor(level/5)));
     appleSpawnInterval = 1000 * Phaser.Math.RoundTo(timelimit/numApplesToSpawn, -2);
     appleGravityY = Math.floor(5*(level-1));
 
     var numMonkeysToSpawn = Math.floor(level/2);
     monkeySpawnInterval = 1000 * Phaser.Math.RoundTo(timelimit/(numMonkeysToSpawn+1), -2);
-}
-
-/**
- * Determines number of apples to spawn based on current level.
- * @returns {Number} apples to spawn
- */
-function getNumApplesToSpawn() {
-    // if (level > 10) {
-    //     return Math.floor((0.4*level*level + Math.log(level) + 14) / (level/10));
-    // }
-    // return Math.floor(0.4*level*level + Math.log(level) + 14);
-    return Math.floor(2*(level-1) + 12 - (2*Math.floor(level/5)));
 }
 
 /**
@@ -694,6 +682,21 @@ class GamePlay extends Phaser.Scene {
      create() { 
         gameplayMusic = playSound("game_music");
 
+        var colorful_text_style = {
+            fontFamily: '"Pixelify Sans", sans-serif',
+            fontSize: '32px',
+            fill: '#fe3',
+            stroke: '#f54',
+            strokeThickness: 3,
+            shadow: {
+                offsetX: 2,
+                offsetY: 2,
+                color: '#f0e',
+                blur: 5,
+                fill: true
+            }
+        };
+
         // Scoring & Level
         scoreText = this.add.text(16, 16, 'SCORE: ' + score + '/' + applesNeeded, colorful_text_style);
         this.add.text(16, 45, 'Level ' + level, colorful_text_style);
@@ -711,7 +714,7 @@ class GamePlay extends Phaser.Scene {
         // Trees
         this.add.image(100, 575, 'tree').setScale(3).alpha = 0.4;
         this.add.image(475, 575, 'tree').setScale(3).alpha = 0.4;
-        var main_tree = this.add.image(288, 400, 'tree').setScale(7.5);
+        this.add.image(288, 400, 'tree').setScale(7.5);
 
 
         // Create ground
@@ -888,10 +891,21 @@ class GamePlay extends Phaser.Scene {
             this.scene.pause();
             this.scene.launch('PauseGame');
         }
- 
+
         // Player movement
         if (timeSinceHitByBanana < 50) {
             if (timeSinceHitByBanana == 1) {
+                if (score > 1) {
+                    var lostApple = apples.create(player.getCenter().x, player.getCenter().y, 'mush')
+                        .setScale(3)      
+                        .setVelocityY(Phaser.Math.Between(-500,-500))
+                        .setVelocityX(Phaser.Math.Between(-500,500))
+                        .setGravityY(appleGravityY);
+                    lostApple.name = "mush";
+                    score--;
+                    scoreText.setText('SCORE: ' + score + '/' + applesNeeded);
+                }
+
                 stats.bananaHits++;
                 playSound("banana_hit");
             }
@@ -969,9 +983,7 @@ class GamePlay extends Phaser.Scene {
                     player.anims.play('still');
                 }
             }
-            
         }
-
     }
 }
 
@@ -1022,7 +1034,7 @@ function animateMonkey(scene, monkey) {
     var bananaInterval = Phaser.Math.Between(1000,4000);
     timeouts.push(setTimeout( () => {
         monkey.anims.play('toss').once('animationcomplete', () => {
-            tossBanana(scene, monkey);
+            tossBanana(monkey);
         }); 
     }, bananaInterval));
 
@@ -1039,28 +1051,30 @@ function animateMonkey(scene, monkey) {
     
 }
 
-function tossBanana(scene, monkey) {
+function tossBanana(monkey) {
     var banana = bananas.create(monkey.x+40, monkey.y-100, 'banana').setScale(3);
     banana.setVelocityX(player.x - banana.x);
     banana.setVelocityY(player.y - banana.y - 50);
 }
 
-function bananaStrike() {
-    timeSinceHitByBanana = 0;
-    player.setVelocityX(-1*player.body.velocity.x);
-    player.setVelocityY(-1*player.y);
+function bananaStrike(player, banana) {
+    if ((banana.getCenter().x < player.getCenter().x + 60) && (banana.getCenter().x > player.getCenter().x - 60)) {
+        timeSinceHitByBanana = 0;
+        player.setVelocityX(-1*player.body.velocity.x);
+        player.setVelocityY(-1*player.y);
+    }
 }
 
 function processAppleCollision(player, apple) {
-    if (player.body.touching.up && !apple.body.blocked.down) {
-        collectApple(player, apple);
+    if (apple.name != 'mush' && player.body.touching.up && (apple.getCenter().y < player.getCenter().y)) {
+        collectApple(apple);
     }
-    else if (apple.name != 'mush') {
+    else if (apple.y > 675){
         turnAppleToMush(apple);        
     }
 }
 
-function collectApple(player, apple) {
+function collectApple(apple) {
     apple.disableBody(true, true);
     if (apple.name == "golden") {
         playSound("golden_collect");
@@ -1088,9 +1102,7 @@ function turnAppleToMush(apple) {
 }
 
 function formatTime(seconds) {
-    // Minutes
     var minutes = Math.floor(seconds/60);
-    // Seconds
     var partInSeconds = seconds%60;
     // Adds left zeroes to seconds
     partInSeconds = partInSeconds.toString().padStart(2, '0');
@@ -1107,12 +1119,10 @@ function stopTimer() {
     }
 }
 
-
 function onEvent() {
     this.initialTime--;
     countdownText.setText('TIME LEFT: ' + formatTime(this.initialTime));
 }
-
 
 function playSound(name) {
     var audio = new Audio("assets/sounds/" + name + ".mp3");
@@ -1122,23 +1132,7 @@ function playSound(name) {
 
 
 
-
 // Text styles
-var colorful_text_style = {
-    fontFamily: '"Pixelify Sans", sans-serif',
-    fontSize: '32px',
-    fill: '#fe3',
-    stroke: '#f54',
-    strokeThickness: 3,
-    shadow: {
-        offsetX: 2,
-        offsetY: 2,
-        color: '#f0e',
-        blur: 5,
-        fill: true
-    }
-};
-
 var board_text_style = {
     fontFamily: '"Pixelify Sans", sans-serif',
     fontSize: '30px',
