@@ -446,9 +446,7 @@ class LevelEnd extends Phaser.Scene {
         setInterval(() => {
             if (i < levelEndText.length) {
                 this.add.text(75, 240 + i*30, levelEndText[i], level_end_text_style);
-            }
-            else return;
-
+            } else return;
             i++;
         }, 500);
 
@@ -893,7 +891,7 @@ class GamePlay extends Phaser.Scene {
         }
 
         // Player movement
-        if (timeSinceHitByBanana < 50) {
+        if (timeSinceHitByBanana < 35) {
             if (timeSinceHitByBanana == 1) {
                 if (score > 1) {
                     var lostApple = apples.create(player.getCenter().x, player.getCenter().y, 'mush')
