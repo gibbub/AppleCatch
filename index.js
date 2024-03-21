@@ -53,7 +53,6 @@ function initializeGame() {
     appleSpawnInterval = 2000;
     appleGravityY = 0;
     monkeySpawnInterval = 30000;
-
     stats = {
         totalApples: 0,
         goldenApples: 0,
@@ -77,9 +76,7 @@ function setUpNextLevel() {
     excessApples = 0;
     level++;
 
-    applesNeeded = 4*level + 4;
     applesNeeded = 2*(level-1) + 8;
-
     var numApplesToSpawn = Math.floor(2*(level-1) + 12 - (2*Math.floor(level/5)));
     appleSpawnInterval = 1000 * Phaser.Math.RoundTo(timelimit/numApplesToSpawn, -2);
     appleGravityY = Math.floor(5*(level-1));
@@ -100,6 +97,8 @@ class StartScreen extends Phaser.Scene {
     }
 
     preload() {
+        this.load.image('bg', 'assets/bg_plain.PNG');
+        this.load.image('bg-with-tree', 'assets/bg_tree2.PNG');
         this.load.image('game-title', 'assets/start_screen/game_title.PNG');
         this.load.image('start-button', 'assets/start_screen/start_button.PNG');
         this.load.image('how-to-button', 'assets/start_screen/how_to_button.PNG');
@@ -108,6 +107,7 @@ class StartScreen extends Phaser.Scene {
     }
 
     create() {
+        this.add.image(288, 416, 'bg-with-tree');
         var game_title = this.add.image(285, 219, 'game-title').setScale(3).setInteractive();
         var start_button = this.add.sprite(288, 425, 'start-button').setScale(3).setInteractive();
         var how_to_button = this.add.sprite(288, 625, 'how-to-button').setScale(3).setInteractive();
@@ -202,6 +202,7 @@ class HowToPlay extends Phaser.Scene {
     }
 
     create() {
+        this.add.image(288, 416, 'bg-with-tree');
         this.add.image(288, 110, 'how-to-title').setScale(3);
         this.add.image(288, 450, 'how-to-play').setScale(5);
         var exit_button = this.add.image(80, 140, 'exit-button').setScale(3).setInteractive();
@@ -294,15 +295,12 @@ class PauseGame extends Phaser.Scene {
             game.scene.resume('GamePlay');
             gameplayMusic.play();
         });
-
         exit_button.on('pointerover', function(pointer) {
             this.setScale(2.5);
         });
-
         exit_button.on('pointerout', function (pointer) {
             this.setScale(3);
         });
-
 
         // How to Button function
         how_to_button.on('pointerdown', () => {
@@ -311,15 +309,12 @@ class PauseGame extends Phaser.Scene {
             this.scene.moveAbove('GamePlay', 'HowToPlay');
             this.scene.start('HowToPlay');
         });
-
         how_to_button.on('pointerover', function(pointer) {
             this.setScale(2.9);
         });
-
         how_to_button.on('pointerout', function (pointer) {
             this.setScale(3);
         });
-
 
         // Exit To Main Button function
         exit_to_main_button.on('pointerdown', () => {
@@ -330,11 +325,9 @@ class PauseGame extends Phaser.Scene {
             stopTimer();
             this.scene.start('StartScreen');
         });
-
         exit_to_main_button.on('pointerover', function(pointer) {
             this.setScale(2.9);
         });
-
         exit_to_main_button.on('pointerout', function (pointer) {
             this.setScale(3);
         });
@@ -352,7 +345,6 @@ class PauseGame extends Phaser.Scene {
                 mobile_play_toggle.anims.play('mobile-play-on');
             }
         });
-
         if (mobilePlayOn) {
             mobile_play_toggle.anims.play('mobile-play-on');
         }
@@ -367,7 +359,6 @@ class PauseGame extends Phaser.Scene {
             this.scene.stop();
             game.scene.resume('GamePlay');
         }
-
     }
 }
 
@@ -567,6 +558,7 @@ class GameOver extends Phaser.Scene {
     create() {
         playSound("gameover");
 
+        this.add.image(288, 416, 'bg-with-tree');
         this.add.image(288, 400, 'gameover-board').setScale(5.5);
         var exit_to_main_button = this.add.image(288, 675, 'exit-to-main-button').setScale(2.5).setInteractive();
         var restart_button = this.add.image(288, 550, 'restart-button').setScale(2.5).setInteractive();
@@ -681,6 +673,8 @@ class GamePlay extends Phaser.Scene {
 
      create() { 
         gameplayMusic = playSound("game_music");
+
+        this.add.image(288, 416, 'bg');
 
         var colorful_text_style = {
             fontFamily: '"Pixelify Sans", sans-serif',
