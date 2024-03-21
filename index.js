@@ -1,23 +1,14 @@
 import Upgrade from "./Upgrade.js";
 
-// Mobile Play
-var mobilePlayOn = false;
-var jump_button;
-var left_button;
-var right_button;
-
 // Game play vars
 var player;
-var apples;
-var monkey_right;
-var monkey_left;
-var bananas;
-var cursors;
-var score = 0;
-var scoreText;
-var excessApples = 0;
-var excessAppleText;
+var apples, bananas;
+var monkey_right, monkey_left;
 var stats;
+var score = 0;
+var excessApples = 0;
+var scoreText, excessAppleText;
+var cursors;
 var gameplayMusic;
 
 // Vars that change with each level
@@ -38,9 +29,12 @@ var timeSinceHitByBanana = 100;
 var timelimit = 30;
 var countdownText;
 var timedEvent;
-var appleIntervalID;
-var monkeyIntervalID;
+var appleIntervalID, monkeyIntervalID;
 var timeouts = [];
+
+// Mobile Play
+var mobilePlayOn = false;
+var jump_button, left_button, right_button;
 
 /**
  * Sets up first level; all game vars are set to their defaults
@@ -53,6 +47,7 @@ function initializeGame() {
     appleSpawnInterval = 2000;
     appleGravityY = 0;
     monkeySpawnInterval = 30000;
+    gamePaused = false;
     stats = {
         totalApples: 0,
         goldenApples: 0,
@@ -60,12 +55,10 @@ function initializeGame() {
         bananaHits: 0
     };
     
-    // Upgrades
+    // Initialize upgrades
     speedUpgrade = new Upgrade("speed", 8, 0, 200, "assets/level_end/boots.PNG");
     luckUpgrade = new Upgrade("luck", 10, 0, 1, "assets/level_end/luck.PNG");
     basketUpgrade = new Upgrade("basket", 12, 0, 0, "assets/level_end/basket.PNG");
-
-    gamePaused = false;
 }
 
 /**
@@ -87,7 +80,6 @@ function setUpNextLevel() {
 
 /**
  * The start screen for Apple Catch.
- * 
  * Allows player to begin the game or view the "How To Play" scene.
  */
 class StartScreen extends Phaser.Scene {
@@ -131,11 +123,9 @@ class StartScreen extends Phaser.Scene {
             initializeGame();
             this.scene.start('GamePlay');   
         });
-
         start_button.on('pointerover', function(pointer) {
             this.setScale(2.9);
         });
-
         start_button.on('pointerout', function (pointer) {
             this.setScale(3);
         });
@@ -146,11 +136,9 @@ class StartScreen extends Phaser.Scene {
             this.scene.stop();
             this.scene.start('HowToPlay');
         });
-
         how_to_button.on('pointerover', function(pointer) {
             this.setScale(2.9);
         });
-
         how_to_button.on('pointerout', function (pointer) {
             this.setScale(3);
         });
@@ -178,11 +166,9 @@ class StartScreen extends Phaser.Scene {
                 mobile_play_toggle.anims.play('mobile-play-on');
             }
         });
-
         if (mobilePlayOn) {
             mobile_play_toggle.anims.play('mobile-play-on');
         }
-        
     }
 }
 
@@ -208,16 +194,16 @@ class HowToPlay extends Phaser.Scene {
         var exit_button = this.add.image(80, 140, 'exit-button').setScale(3).setInteractive();
 
         var instructions =  
-        "\n Grandma needs apples to make apple pies."
-        +"\n How many can you catch?"
-        +"\n\n Use extra apples to buy upgrades, or let them carry over to the next level."
-        +"\n Beware of mischevious critters who try to distract you...";
+        "Grandma needs apples to make apple pies.\n" +
+        "How many can you catch?\n\n" +
+        "Use extra apples to buy upgrades, or let them carry over to the next level.\n" +
+        "Beware of mischevious critters who try to distract you...";
         this.make.text({
             x: 288, 
-            y: 335, 
+            y: 345, 
             text: instructions,
             origin: { x: 0.5, y: 0.5 },
-            style: board_text_style
+            style: howto_text_style
         });
 
         // Exit Button function
@@ -226,20 +212,14 @@ class HowToPlay extends Phaser.Scene {
             this.scene.stop();
             if (gamePaused) {
                 this.scene.start('PauseGame');
-            }
-            else {
-                this.scene.start('StartScreen');
-            } 
+            } else { this.scene.start('StartScreen'); }
         });
-
         exit_button.on('pointerover', function(pointer) {
             this.setScale(2.5);
         });
-
         exit_button.on('pointerout', function (pointer) {
             this.setScale(3);
         });
-
     }
 
     update() {
@@ -263,9 +243,11 @@ class HowToPlay extends Phaser.Scene {
             }
         });
     }
-    
 }
 
+/**
+ * The Pause Screen for Apple Catch, which halts gameplay.
+ */
 class PauseGame extends Phaser.Scene {
 
     constructor () {
@@ -274,16 +256,14 @@ class PauseGame extends Phaser.Scene {
 
     preload() {
         this.load.image('board', 'assets/blank_board.PNG');
-        this.load.image('how-to-play-button', 'assets/start_screen/how_to_button.PNG');
         this.load.image('exit-to-main', 'assets/exit_to_main_button.PNG');
         this.load.image('exit', 'assets/exit_button.PNG');
-        this.load.spritesheet('mobile-play-toggle', 'assets/mobile_play/mobile_play_options.png', { frameWidth: 64, frameHeight: 16 });
     }
 
     create() {
         this.add.image(288, 400, 'board').setScale(4);
         var exit_button = this.add.image(90, 185, 'exit').setScale(3).setInteractive();
-        var how_to_button = this.add.image(288, 315, 'how-to-play-button').setScale(3).setInteractive();
+        var how_to_button = this.add.image(288, 315, 'how-to-button').setScale(3).setInteractive();
         var exit_to_main_button = this.add.image(288, 475, 'exit-to-main').setScale(3).setInteractive();
         var mobile_play_toggle = this.add.sprite(288, 625, 'mobile-play-toggle').setScale(3).setInteractive();
 
@@ -364,7 +344,6 @@ class PauseGame extends Phaser.Scene {
 
 /**
  * A scene which is prompted at the end of each level.
- * 
  * Allows player to choose upgrades and proceed to the next level.
  */
 class LevelEnd extends Phaser.Scene {
@@ -380,7 +359,6 @@ class LevelEnd extends Phaser.Scene {
         this.load.image('luck', luckUpgrade.sprite);
         this.load.image('basket', basketUpgrade.sprite);
         this.load.image('next', 'assets/level_end/next_level_button.PNG');
-        this.load.image('apple', 'assets/apple.PNG');
         this.load.spritesheet('amazing-text', 'assets/level_end/amazing_text.png', { frameWidth: 65, frameHeight: 36 });
         this.load.spritesheet('grandma-dance', 'assets/level_end/grandma_dance.png', { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('nice-text', 'assets/level_end/nice_text.png', { frameWidth: 38, frameHeight: 32 });
@@ -428,7 +406,6 @@ class LevelEnd extends Phaser.Scene {
 
         // End of level stats
         excessApples = score > applesNeeded ? score - applesNeeded : 0;
-
         var levelEndText = [
             "APPLES...",
             ">NEEDED: " + applesNeeded,
@@ -438,7 +415,7 @@ class LevelEnd extends Phaser.Scene {
         var i = 0;
         setInterval(() => {
             if (i < levelEndText.length) {
-                this.add.text(75, 240 + i*30, levelEndText[i], level_end_text_style);
+                this.add.text(75, 240 + i*30, levelEndText[i], board_text_style);
             } else return;
             i++;
         }, 500);
@@ -452,20 +429,17 @@ class LevelEnd extends Phaser.Scene {
             this.physics.add.staticSprite(400, 290, 'player-dance').setScale(5).anims.play('player-dance');
         }
 
-
         // Upgrade prices
-        speedUpgrade.priceText = this.add.text(110, 605, speedUpgrade.price, level_end_text_style);
+        speedUpgrade.priceText = this.add.text(110, 605, speedUpgrade.price, board_text_style);     // Speed
         this.add.image(160, 617, 'apple').setScale(2);
-        
-        luckUpgrade.priceText = this.add.text(260, 605, luckUpgrade.price, level_end_text_style);
+        luckUpgrade.priceText = this.add.text(260, 605, luckUpgrade.price, board_text_style);       // Luck
         this.add.image(310, 617, 'apple').setScale(2);
-        
-        basketUpgrade.priceText = this.add.text(410, 605, basketUpgrade.price, level_end_text_style);
+        basketUpgrade.priceText = this.add.text(410, 605, basketUpgrade.price, board_text_style);   // Basket
         this.add.image(460, 617, 'apple').setScale(2);
 
         // Spending (excess) apples
         this.add.image(125, 675, 'apple').setScale(3);
-        excessAppleText = this.add.text(150, 668, excessApples, level_end_text_style);
+        excessAppleText = this.add.text(150, 668, excessApples, board_text_style);
 
         // Upgrade Button functions
         var upgrades = [speedUpgrade, luckUpgrade, basketUpgrade];
@@ -484,11 +458,9 @@ class LevelEnd extends Phaser.Scene {
 
                     stats.upgradesPurchased++;
                 });
-        
                 currUpgrade.icon.on('pointerover', function(pointer) {
                     this.setScale(4.5);
                 });
-        
                 currUpgrade.icon.on('pointerout', function (pointer) {
                     this.setScale(4);
                 });
@@ -502,11 +474,9 @@ class LevelEnd extends Phaser.Scene {
             this.scene.stop();
             this.scene.start('GamePlay');
         });
-
         next_button.on('pointerover', function(pointer) {
             this.setScale(3);
         });
-
         next_button.on('pointerout', function (pointer) {
             this.setScale(3.5);
         });
@@ -524,6 +494,7 @@ class LevelEnd extends Phaser.Scene {
             }
         });
 
+        // If player cannot afford an upgrade, set price color to Red and make uninteractive
         if (excessApples < speedUpgrade.price) {
             speedUpgrade.priceText.setColor("#a00");
             speedUpgrade.icon.setScale(4).disableInteractive();
@@ -540,7 +511,9 @@ class LevelEnd extends Phaser.Scene {
     }
 }
 
-
+/**
+ * The Gameover screen, which is triggered upon not collecting enough apples at the end of a level.
+ */
 class GameOver extends Phaser.Scene {
 
     constructor () {
@@ -563,6 +536,7 @@ class GameOver extends Phaser.Scene {
         var exit_to_main_button = this.add.image(288, 675, 'exit-to-main-button').setScale(2.5).setInteractive();
         var restart_button = this.add.image(288, 550, 'restart-button').setScale(2.5).setInteractive();
         
+        // Game over animations
         this.anims.create({
             key: 'you-lose-text',
             frames: this.anims.generateFrameNumbers('you-lose-text', { start: 1, end: 0 }),
@@ -575,20 +549,10 @@ class GameOver extends Phaser.Scene {
             frameRate: 8,
             repeat: -1
         });
-
         this.physics.add.staticSprite(225, 190, 'you-lose-text').setScale(3).anims.play('you-lose-text');
         this.physics.add.staticSprite(425, 180, 'gameover-anim').setScale(4).anims.play('gameover-anim');
 
-        var gameover_text_style = {
-            fontFamily: '"Pixelify Sans", sans-serif',
-            fontSize: '25px',
-            fill: '#4a1c1a',
-            stroke: '#c17f38',
-            strokeThickness: 3,
-            align: 'right',
-            wordWrap: { width: 375 }
-        }
-
+        // Game stats display
         var gameover_messages = [
             "Level reached: " + level,
             "Total apples caught: " + stats.totalApples,
@@ -599,7 +563,7 @@ class GameOver extends Phaser.Scene {
         var i = 0;
         setInterval(() => {
             if (i < gameover_messages.length) {
-                this.add.text(100, 275 + i*30, gameover_messages[i], gameover_text_style);
+                this.add.text(100, 275 + i*30, gameover_messages[i], board_text_style);
             }
             else return;
 
@@ -613,11 +577,9 @@ class GameOver extends Phaser.Scene {
             initializeGame();
             this.scene.start('GamePlay');  
         });
-
         restart_button.on('pointerover', function(pointer) {
             this.setScale(2.4);
         });
-
         restart_button.on('pointerout', function (pointer) {
             this.setScale(2.5);
         });
@@ -628,23 +590,18 @@ class GameOver extends Phaser.Scene {
             this.scene.stop();
             this.scene.start('StartScreen');
         });
-
         exit_to_main_button.on('pointerover', function(pointer) {
             this.setScale(2.4);
         });
-
         exit_to_main_button.on('pointerout', function (pointer) {
             this.setScale(2.5);
         });
     }
-
-    update() {
-
-    }
 }
 
-
-
+/**
+ * The actual gameplay of Apple Catch
+ */
 class GamePlay extends Phaser.Scene {
 
     constructor () {
@@ -652,7 +609,6 @@ class GamePlay extends Phaser.Scene {
     }
 
      preload() {
-        this.load.image('apple', 'assets/apple.PNG');
         this.load.image('mush', 'assets/mush.PNG');
         this.load.image('golden-apple', 'assets/golden_apple.PNG');
         this.load.image('golden-mush', 'assets/golden_mush.PNG');
@@ -672,51 +628,29 @@ class GamePlay extends Phaser.Scene {
     }
 
      create() { 
+        gamePaused = false;
         gameplayMusic = playSound("game_music");
 
+        // Background & ground graphics
         this.add.image(288, 416, 'bg');
+        this.add.image(100, 575, 'tree').setScale(3).alpha = 0.4;
+        this.add.image(475, 575, 'tree').setScale(3).alpha = 0.4;
+        this.add.image(288, 400, 'tree').setScale(7.5);
+        const map = this.make.tilemap({ key: 'ground' });
+        const tiles = map.addTilesetImage('apple catch', 'tiles');
+        const layer = map.createLayer(0, tiles, 0, 0);
+        layer.setScale(4);
 
-        var colorful_text_style = {
-            fontFamily: '"Pixelify Sans", sans-serif',
-            fontSize: '32px',
-            fill: '#fe3',
-            stroke: '#f54',
-            strokeThickness: 3,
-            shadow: {
-                offsetX: 2,
-                offsetY: 2,
-                color: '#f0e',
-                blur: 5,
-                fill: true
-            }
-        };
-
-        // Scoring & Level
+        // Scoring, level, & time
         scoreText = this.add.text(16, 16, 'SCORE: ' + score + '/' + applesNeeded, colorful_text_style);
         this.add.text(16, 45, 'Level ' + level, colorful_text_style);
 
-        // Time
-        gamePaused = false;
         this.initialTime = timelimit;
         countdownText = this.add.text(325, 16, 
             'TIME LEFT: ' + formatTime(this.initialTime),
             colorful_text_style
         );
         timedEvent = this.time.addEvent({ delay: 1000, callback: onEvent, callbackScope: this, loop: true });
-
-
-        // Trees
-        this.add.image(100, 575, 'tree').setScale(3).alpha = 0.4;
-        this.add.image(475, 575, 'tree').setScale(3).alpha = 0.4;
-        this.add.image(288, 400, 'tree').setScale(7.5);
-
-
-        // Create ground
-        const map = this.make.tilemap({ key: 'ground' });
-        const tiles = map.addTilesetImage('apple catch', 'tiles');
-        const layer = map.createLayer(0, tiles, 0, 0);
-        layer.setScale(4);
-        
 
         // Player creation & animations
         var playerSprite = 'playerB' + basketUpgrade.degree;
@@ -726,72 +660,38 @@ class GamePlay extends Phaser.Scene {
         player.setScale(4);
         player.body.setGravityY(1000);
 
-        if (!this.anims.exists('left')) {
-            
+        if (!this.anims.exists('left') || basketUpgrade.degree > 0) {
+            if (basketUpgrade.degree > 0 && this.anims.anims.entries.left.frames[0].textureKey != playerSprite) { // If basket purchase has been made
+                this.anims.remove('left');
+                this.anims.remove('still');
+                this.anims.remove('right');
+                this.anims.remove('shock');
+            }
             this.anims.create({
                 key: 'left',
                 frames: this.anims.generateFrameNumbers(playerSprite, { start: 0, end: 2}),
                 frameRate: 10,
                 repeat: -1
             });
-    
             this.anims.create({
                 key: 'still',
                 frames: [ { key: playerSprite, frame: 2 } ],
                 frameRate: 20
             });
-    
             this.anims.create({
                 key: 'right',
                 frames: this.anims.generateFrameNumbers(playerSprite, { start: 2, end: 4}),
                 frameRate: 10,
                 repeat: -1
             });
-    
             this.anims.create({
                 key: 'shock',
                 frames: [ { key: playerSprite, frame: 5 }],
                 frameRate: 1
             });
-        }   // if basket purchase has been made
-        else if (this.anims.anims.entries.left.frames[0].textureKey != playerSprite) {
-            
-            this.anims.remove('left');
-            this.anims.remove('still');
-            this.anims.remove('right');
-            this.anims.remove('shock');
-
-            this.anims.create({
-                key: 'left',
-                frames: this.anims.generateFrameNumbers(playerSprite, { start: 0, end: 2}),
-                frameRate: 10,
-                repeat: -1
-            });
-    
-            this.anims.create({
-                key: 'still',
-                frames: [ { key: playerSprite, frame: 2 } ],
-                frameRate: 20
-            });
-    
-            this.anims.create({
-                key: 'right',
-                frames: this.anims.generateFrameNumbers(playerSprite, { start: 2, end: 4}),
-                frameRate: 10,
-                repeat: -1
-            });
-    
-            this.anims.create({
-                key: 'shock',
-                frames: [ { key: playerSprite, frame: 5 }],
-                frameRate: 1
-            });
-        }
-
-
+        }   
 
         // Monkeys
-        bananas = this.physics.add.group();
         monkey_right = this.physics.add.staticSprite(335, 340, 'monkey').setScale(4);
         monkey_right.visible = false;
         monkey_left = this.physics.add.staticSprite(110, 260, 'monkey').setScale(4);
@@ -803,19 +703,16 @@ class GamePlay extends Phaser.Scene {
                 frames: this.anims.generateFrameNumbers('monkey', { start: 0, end: 1 }),
                 frameRate: 10
             });
-    
             this.anims.create({
                 key: 'toss',
                 frames: this.anims.generateFrameNumbers('monkey', { start: 1, end: 3}),
                 frameRate: 8
             });
-    
             this.anims.create({
                 key: 'idle',
                 frames: [ { key: 'monkey', frame: 1 }],
                 frameRate: 20
             });
-    
             this.anims.create({
                 key: 'giggle',
                 frames: this.anims.generateFrameNumbers('monkey', { start: 5, end: 6 }),
@@ -823,24 +720,19 @@ class GamePlay extends Phaser.Scene {
                 repeat: -1
             });
         }
-
-        // Spawn monkey
-        monkeyIntervalID = setInterval( () => {
-            spawnMonkey(this);
+        monkeyIntervalID = setInterval( () => { // Spawn monkey
+            spawnMonkey();
         }, monkeySpawnInterval);
 
-
-        // Apples
+        // Apples & bananas
         apples = this.physics.add.group();
         appleIntervalID = setInterval(spawnApple, appleSpawnInterval);
+        bananas = this.physics.add.group();
         
-
         // Set colliders
         layer.setCollisionByExclusion([-1]);
         this.physics.add.collider(player, layer);
         this.physics.add.collider(apples, layer);
-
-        // Check collisions
         this.physics.add.overlap(player, apples, processAppleCollision, null, this);
         this.physics.add.overlap(player, bananas, bananaStrike, null, this);
 
@@ -857,12 +749,10 @@ class GamePlay extends Phaser.Scene {
             playSound("select");
             gamePaused = true;
         });
-
     }
 
 
      update() {
-        
         // Time
         if (this.initialTime === 0) {
             stopTimer();
@@ -890,6 +780,7 @@ class GamePlay extends Phaser.Scene {
         if (timeSinceHitByBanana < 35) {
             if (timeSinceHitByBanana == 1) {
                 if (score > 1) {
+                    // When player is hit by banana, they lose an apple
                     var lostApple = apples.create(player.getCenter().x, player.getCenter().y, 'mush')
                         .setScale(3)      
                         .setVelocityY(Phaser.Math.Between(-500,-500))
@@ -899,7 +790,6 @@ class GamePlay extends Phaser.Scene {
                     score--;
                     scoreText.setText('SCORE: ' + score + '/' + applesNeeded);
                 }
-
                 stats.bananaHits++;
                 playSound("banana_hit");
             }
@@ -907,12 +797,13 @@ class GamePlay extends Phaser.Scene {
             player.anims.play('shock');
         }
         else {
-            // Applied when player walks over mushed apple
+            // Speed penalty applied when player walks over mushed apple
             var speedPenalty = 1;
             if (this.physics.overlap(player, apples)) {
                 speedPenalty = 0.7;
             }
 
+            // Keyboard movement
             if (cursors.left.isDown) {
                 player.setVelocityX(-speedUpgrade.effect * speedPenalty);
                 player.anims.play('left', true);
@@ -920,29 +811,22 @@ class GamePlay extends Phaser.Scene {
             else if (cursors.right.isDown) {
                 player.setVelocityX(speedUpgrade.effect * speedPenalty);
                 player.anims.play('right', true);
-            }
-            else {
-                player.setVelocityX(0);
-            }
-
+            } else { player.setVelocityX(0); }
+            
             if (cursors.up.isDown && player.body.blocked.down) {
                 player.setVelocityY(-600);
             }
-
             if (cursors.down.isDown) {
                 player.setVelocityY(400);
             }
 
             // Mobile Play
             if (mobilePlayOn) {
-                left_button.visible = true;
-                right_button.visible = true;
-                jump_button.visible = true;
+                left_button.visible, right_button.visible, jump_button.visible = true;
 
                 var pointer = game.input.activePointer;
                 if (pointer.isDown) {
-                    // There is definitely a better/proper way to handle this...
-                    // But this works for now. Ish.
+                    // There is definitely a better/proper way to handle this... But this works for now. Ish.
     
                     // Move left
                     if ((pointer.downX > 256 && pointer.downX < 320)
@@ -957,16 +841,12 @@ class GamePlay extends Phaser.Scene {
                         player.anims.play('right', true);
                     }
                 }
-                else {
-                    player.anims.play('still');
-                }
-
+                else { player.anims.play('still'); }
                 jump_button.on('pointerdown', () => {
                     if (player.body.blocked.down) {
                         player.setVelocityY(-600);
                     }
                 });
-
             }
             else {
                 left_button.visible = false;
@@ -981,7 +861,9 @@ class GamePlay extends Phaser.Scene {
     }
 }
 
-
+/**
+ * Determines a random coordinate to spawn a regular or golden apple.
+ */
 function spawnApple() {
     if (!gamePaused) {
         var xCoord = Phaser.Math.Between(125, 475);
@@ -989,23 +871,24 @@ function spawnApple() {
         var randomRoll = Phaser.Math.Between(0, 100);
     
         var apple;
-        if (randomRoll < (3 * luckUpgrade.effect)) {
-            
-            // Spawn Golden Apple
+        if (randomRoll < (3 * luckUpgrade.effect)) { // Spawn Golden Apple
             apple = apples.create(xCoord, yCoord, 'golden-apple').setScale(3);
             apple.name = "golden";
         }
         else {
             apple = apples.create(xCoord, yCoord, 'apple').setScale(3);
         }
-        apple.setBounce(0.1);
-        apple.setVelocityY(Phaser.Math.Between(-50, 0));
-        apple.setGravityY(appleGravityY);
-        apple.setCollideWorldBounds(true);
+        apple.setBounce(0.1)
+            .setVelocityY(Phaser.Math.Between(-50, 0))
+            .setGravityY(appleGravityY)
+            .setCollideWorldBounds(true);
     }
 }
 
-function spawnMonkey(scene) {
+/**
+ * Spawns a monkey on either the left or right side of the tree.
+ */
+function spawnMonkey() {
     var monkeyToSpawn = monkey_right;
     if (!gamePaused) {
         if (monkey_right.visible && !monkey_left.visible) {
@@ -1016,41 +899,45 @@ function spawnMonkey(scene) {
         }
         if (!(monkey_left.visible && monkey_right.visible)) {
             monkeyToSpawn.visible = true;
-            animateMonkey(scene, monkeyToSpawn); 
+            animateMonkey(monkeyToSpawn); 
         }
-
     }
 }
 
-
-function animateMonkey(scene, monkey) {
+/**
+ * Animates the specified monkey.
+ * @param {*} monkey : The monkey to animate.
+ */
+function animateMonkey(monkey) {
     monkey.anims.play('appear');
-    var bananaInterval = Phaser.Math.Between(1000,4000);
-    timeouts.push(setTimeout( () => {
+    var bananaInterval = Phaser.Math.Between(1000,4000);    // Interval before throwing banana
+   
+    timeouts.push(setTimeout( () => {    // Throws banana
         monkey.anims.play('toss').once('animationcomplete', () => {
-            tossBanana(monkey);
+            var banana = bananas.create(monkey.x+40, monkey.y-100, 'banana').setScale(3);
+            banana.setVelocityX(player.x - banana.x);
+            banana.setVelocityY(player.y - banana.y - 50);
         }); 
     }, bananaInterval));
 
-    timeouts.push(setTimeout( () => {
+    timeouts.push(setTimeout( () => {   // Giggle
         monkey.anims.play('giggle');
         playSound("monkey_laugh");
     }, bananaInterval + 1000));
 
-    timeouts.push(setTimeout( () => {
+    timeouts.push(setTimeout( () => {   // Disappear
         monkey.anims.playReverse('appear').once('animationcomplete', () => {
             monkey.visible = false;
         });
     }, bananaInterval + 2500));
-    
 }
 
-function tossBanana(monkey) {
-    var banana = bananas.create(monkey.x+40, monkey.y-100, 'banana').setScale(3);
-    banana.setVelocityX(player.x - banana.x);
-    banana.setVelocityY(player.y - banana.y - 50);
-}
-
+/**
+ * Called when a banana collides with a player.
+ * If banana collides with the specified player hitbox, the player is sent flying in the opposite direction of their current velocity.
+ * @param {*} player : The player.
+ * @param {*} banana : The banana which has struck the player.
+ */
 function bananaStrike(player, banana) {
     if ((banana.getCenter().x < player.getCenter().x + 60) && (banana.getCenter().x > player.getCenter().x - 60)) {
         timeSinceHitByBanana = 0;
@@ -1059,15 +946,25 @@ function bananaStrike(player, banana) {
     }
 }
 
+/**
+ * Called when the player collides with an apple.
+ * Determines if player can collect apple, or they are simply stepping on one.
+ * @param {*} player : The player.
+ * @param {*} apple : The apple which has collided with the player.
+ */
 function processAppleCollision(player, apple) {
     if (apple.name != 'mush' && player.body.touching.up && (apple.getCenter().y < player.getCenter().y)) {
         collectApple(apple);
     }
-    else if (apple.y > 675){
+    else if (apple.y > 675){    // If apple is below certain y value, player can no longer collect it.
         turnAppleToMush(apple);        
     }
 }
 
+/**
+ * Removes the collected apple from the game and increases the player score.
+ * @param {*} apple : The apple to collect.
+ */
 function collectApple(apple) {
     apple.disableBody(true, true);
     if (apple.name == "golden") {
@@ -1075,35 +972,38 @@ function collectApple(apple) {
         score = score + 4;
         stats.goldenApples++;
     }
-    else {
-        playSound("collect");
-    }
+    else { playSound("collect"); }
     score++;
     scoreText.setText('SCORE: ' + score + '/' + applesNeeded);
     stats.totalApples++;
 }
 
+/**
+ * Changes the texture of an apple to mush when it is stepped on by the player.
+ * @param {*} apple : The apple to turn to mush.
+ */
 function turnAppleToMush(apple) {
     if (apple.name != "mush") {
         if (apple.name == "golden") {
             apple.setTexture('golden-mush');
         }
-        else {
-            apple.setTexture('mush'); 
-        }
+        else { apple.setTexture('mush'); }
         apple.name = "mush";
     }
 }
 
+/**
+ * Formats the number of seconds left into a string.
+ * @param {Number} seconds : Number of seconds that have passed.
+ * @returns String of time in minutes:seconds format.
+ */
 function formatTime(seconds) {
-    var minutes = Math.floor(seconds/60);
-    var partInSeconds = seconds%60;
-    // Adds left zeroes to seconds
-    partInSeconds = partInSeconds.toString().padStart(2, '0');
-
-    return `${minutes}:${partInSeconds}`;
+    return `0:${seconds.toString().padStart(2, '0')}`;
 }
 
+/**
+ * Pauses the game timer, and any current intervals.
+ */
 function stopTimer() {
     timedEvent.paused = true;
     clearInterval(appleIntervalID);
@@ -1113,21 +1013,27 @@ function stopTimer() {
     }
 }
 
+/**
+ * Decreases time left per second.
+ */
 function onEvent() {
     this.initialTime--;
     countdownText.setText('TIME LEFT: ' + formatTime(this.initialTime));
 }
 
+/**
+ * Plays a specified sound track.
+ * @param {String} name : Name of audio to play.
+ * @returns The Audio object.
+ */
 function playSound(name) {
     var audio = new Audio("assets/sounds/" + name + ".mp3");
     audio.play();
     return audio;
 }
 
-
-
 // Text styles
-var board_text_style = {
+var howto_text_style = {
     fontFamily: '"Pixelify Sans", sans-serif',
     fontSize: '25px',
     fill: '#4a1c1a',
@@ -1136,11 +1042,23 @@ var board_text_style = {
     align: 'center',
     wordWrap: { width: 375 }
 };
-
-
-var level_end_text_style = {
+var colorful_text_style = {
     fontFamily: '"Pixelify Sans", sans-serif',
-    fontSize: '30px',
+    fontSize: '32px',
+    fill: '#fe3',
+    stroke: '#f54',
+    strokeThickness: 3,
+    shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: '#f0e',
+        blur: 5,
+        fill: true
+    }
+};
+var board_text_style = {
+    fontFamily: '"Pixelify Sans", sans-serif',
+    fontSize: '28px',
     fill: '#4a1c1a',
     stroke: '#c17f38',
     strokeThickness: 3,
@@ -1166,5 +1084,4 @@ var config = {
     },
     scene: [StartScreen, HowToPlay, GamePlay, LevelEnd, GameOver, PauseGame]
 };
-
 var game = new Phaser.Game(config);
