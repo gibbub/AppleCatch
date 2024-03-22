@@ -1099,6 +1099,9 @@ var config = {
     type: Phaser.AUTO,
     width: 576,
     height: 832,
+    scale: {
+        mode: Phaser.Scale.FIT
+    },
     backgroundColor: '#48C4F8',
     render: {
         antialias: false
