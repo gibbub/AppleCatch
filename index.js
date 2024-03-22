@@ -107,6 +107,7 @@ class StartScreen extends Phaser.Scene {
         var how_to_button = this.add.sprite(288, 600, 'how-to-button').setScale(3).setInteractive();
         var mobile_play_toggle = this.add.sprite(260, 715, 'mobile-play-toggle').setScale(3).setInteractive();
         var sound_toggle = this.add.sprite(385, 715, 'sound-toggle').setScale(3).setInteractive();
+        this.add.text(125, 780, "Gabby Albrecht 2024", colorful_text_style);
 
         // Spawn apples when Game Title is clicked
         var startScreenApples = this.physics.add.group();
@@ -494,6 +495,11 @@ class LevelEnd extends Phaser.Scene {
         // Upgrade Button functions
         var upgrades = [speedUpgrade, luckUpgrade, basketUpgrade];
         for (const currUpgrade of upgrades) {
+            // Visualize how many times upgrade has been purchased
+            for (var i=0; i < currUpgrade.degree; i++) {
+                currUpgrade.priceText.setText(currUpgrade.priceText.text + "*");
+            }
+            // If player cannot afford upgrade
             if (excessApples < currUpgrade.price) {
                 currUpgrade.priceText.setColor("#a00");
             }
@@ -505,7 +511,9 @@ class LevelEnd extends Phaser.Scene {
                     currUpgrade.applyUpgradeToGame();
                     currUpgrade.price = currUpgrade.price + 8;
                     currUpgrade.priceText.setText(currUpgrade.price);
-
+                    for (var i=0; i < currUpgrade.degree; i++) {
+                        currUpgrade.priceText.setText(currUpgrade.priceText.text + "*");
+                    }
                     stats.upgradesPurchased++;
                 });
                 currUpgrade.icon.on('pointerover', function(pointer) {
@@ -515,6 +523,7 @@ class LevelEnd extends Phaser.Scene {
                     this.setScale(4);
                 });
             }
+
         }
 
         // Next Level Button function
@@ -553,16 +562,16 @@ class LevelEnd extends Phaser.Scene {
             luckUpgrade.priceText.setColor("#a00");
             luckUpgrade.icon.setScale(4).disableInteractive();
         }
-        if (excessApples < basketUpgrade.price) {
+        if (excessApples < basketUpgrade.price || basketUpgrade.degree >= 2) {
             basketUpgrade.priceText.setColor("#a00");
             basketUpgrade.icon.setScale(4).disableInteractive();
         }
         if (basketUpgrade.degree >= 2) {
-            basketUpgrade.priceText.setColor("#a00");
-            basketUpgrade.priceText.setText("MAX");
-            basketUpgrade.icon.setScale(4).disableInteractive();
+            basketUpgrade.priceText.setText("MAX**");
         }
         excessAppleText.setText(excessApples);
+
+
     }
 }
 
