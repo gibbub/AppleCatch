@@ -9,7 +9,6 @@ var score = 0;
 var excessApples = 0;
 var scoreText, excessAppleText;
 var cursors;
-var gameplayMusic;
 
 // Vars that change with each level
 var level = 1;
@@ -32,9 +31,11 @@ var timedEvent;
 var appleIntervalID, monkeyIntervalID;
 var timeouts = [];
 
-// Mobile Play
+// Mobile Play & Sound
 var mobilePlayOn = false;
 var jump_button, left_button, right_button;
+var soundOn = true;
+var gameplayMusic;
 
 /**
  * Sets up first level; all game vars are set to their defaults
@@ -95,6 +96,7 @@ class StartScreen extends Phaser.Scene {
         this.load.image('start-button', 'assets/start_screen/start_button.PNG');
         this.load.image('how-to-button', 'assets/start_screen/how_to_button.PNG');
         this.load.spritesheet('mobile-play-toggle', 'assets/mobile_play/mobile_play_options.png', { frameWidth: 64, frameHeight: 16 });
+        this.load.spritesheet('sound-toggle', 'assets/sound_toggle.png', { frameWidth: 16, frameHeight: 16 });
         this.load.image('apple', 'assets/apple.PNG');
     }
 
@@ -102,8 +104,9 @@ class StartScreen extends Phaser.Scene {
         this.add.image(288, 416, 'bg-with-tree');
         var game_title = this.add.image(285, 219, 'game-title').setScale(3).setInteractive();
         var start_button = this.add.sprite(288, 425, 'start-button').setScale(3).setInteractive();
-        var how_to_button = this.add.sprite(288, 625, 'how-to-button').setScale(3).setInteractive();
-        var mobile_play_toggle = this.add.sprite(288, 750, 'mobile-play-toggle').setScale(3).setInteractive();
+        var how_to_button = this.add.sprite(288, 600, 'how-to-button').setScale(3).setInteractive();
+        var mobile_play_toggle = this.add.sprite(260, 715, 'mobile-play-toggle').setScale(3).setInteractive();
+        var sound_toggle = this.add.sprite(385, 715, 'sound-toggle').setScale(3).setInteractive();
 
         // Spawn apples when Game Title is clicked
         var startScreenApples = this.physics.add.group();
@@ -168,6 +171,32 @@ class StartScreen extends Phaser.Scene {
         });
         if (mobilePlayOn) {
             mobile_play_toggle.anims.play('mobile-play-on');
+        }
+
+        // Sound Toggle
+        this.anims.create({
+            key: 'sound-on',
+            frames: [ { key: 'sound-toggle', frame: 0 }],
+            frameRate: 1
+        });
+        this.anims.create({
+            key: 'sound-off',
+            frames: [ { key: 'sound-toggle', frame: 1 }],
+            frameRate: 1
+        })
+        sound_toggle.on('pointerdown', () => {
+            if (soundOn) {
+                soundOn = false;
+                sound_toggle.anims.play('sound-off');
+            }
+            else { 
+                soundOn = true;
+                sound_toggle.anims.play('sound-on');
+                playSound("select");
+            }
+        });
+        if (!soundOn) {
+            sound_toggle.play('sound-off');
         }
     }
 }
@@ -265,7 +294,8 @@ class PauseGame extends Phaser.Scene {
         var exit_button = this.add.image(90, 185, 'exit').setScale(3).setInteractive();
         var how_to_button = this.add.image(288, 315, 'how-to-button').setScale(3).setInteractive();
         var exit_to_main_button = this.add.image(288, 475, 'exit-to-main').setScale(3).setInteractive();
-        var mobile_play_toggle = this.add.sprite(288, 625, 'mobile-play-toggle').setScale(3).setInteractive();
+        var mobile_play_toggle = this.add.sprite(260, 625, 'mobile-play-toggle').setScale(3).setInteractive();
+        var sound_toggle = this.add.sprite(385, 625, 'sound-toggle').setScale(3).setInteractive();
 
         // Exit Button function
         exit_button.on('pointerdown', () => {
@@ -273,7 +303,9 @@ class PauseGame extends Phaser.Scene {
             this.scene.stop();
             gamePaused = false;
             game.scene.resume('GamePlay');
-            gameplayMusic.play();
+            if (soundOn) {
+                gameplayMusic.play();
+            }
         });
         exit_button.on('pointerover', function(pointer) {
             this.setScale(2.5);
@@ -328,12 +360,30 @@ class PauseGame extends Phaser.Scene {
         if (mobilePlayOn) {
             mobile_play_toggle.anims.play('mobile-play-on');
         }
+
+        // Sound Toggle
+        sound_toggle.on('pointerdown', () => {
+            if (soundOn) {
+                soundOn = false;
+                sound_toggle.anims.play('sound-off');
+            }
+            else { 
+                soundOn = true;
+                sound_toggle.anims.play('sound-on');
+                playSound("select");
+            }
+        });
+        if (!soundOn) {
+            sound_toggle.play('sound-off');
+        }
     }
 
     update() {
         this.input.keyboard.on('keydown-ESC', () => {
             gamePaused = false;
-            gameplayMusic.play();
+            if (soundOn) {
+                gameplayMusic.play();
+            }
         });
         if (!gamePaused) {
             this.scene.stop();
@@ -1055,9 +1105,11 @@ function onEvent() {
  * @returns The Audio object.
  */
 function playSound(name) {
-    var audio = new Audio("assets/sounds/" + name + ".mp3");
-    audio.play();
-    return audio;
+    if (soundOn) {
+        var audio = new Audio("assets/sounds/" + name + ".mp3");
+        audio.play();
+        return audio;
+    } else return new Audio();
 }
 
 // Text styles
