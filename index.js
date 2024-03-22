@@ -43,7 +43,7 @@ function initializeGame() {
     score = 0;
     excessApples = 0;
     level = 1;
-    applesNeeded = 8;
+    applesNeeded = 6;
     appleSpawnInterval = 2000;
     appleGravityY = 0;
     monkeySpawnInterval = 30000;
@@ -69,7 +69,7 @@ function setUpNextLevel() {
     excessApples = 0;
     level++;
 
-    applesNeeded = 2*(level-1) + 8;
+    applesNeeded = 2*(level-1) + 6;
     var numApplesToSpawn = Math.floor(2*(level-1) + 12 - (2*Math.floor(level/5)));
     appleSpawnInterval = 1000 * Phaser.Math.RoundTo(timelimit/numApplesToSpawn, -2);
     appleGravityY = Math.floor(5*(level-1));
