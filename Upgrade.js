@@ -32,7 +32,6 @@ class Upgrade {
         if (this.name == "luck") {
             this.effect++;
         }
-
         // The basket upgrade is handled through the degree value
     }
 

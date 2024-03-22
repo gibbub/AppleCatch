@@ -431,11 +431,11 @@ class LevelEnd extends Phaser.Scene {
 
         // Upgrade prices
         speedUpgrade.priceText = this.add.text(110, 605, speedUpgrade.price, board_text_style);     // Speed
-        this.add.image(160, 617, 'apple').setScale(2);
+        this.add.image(90, 617, 'apple').setScale(2);
         luckUpgrade.priceText = this.add.text(260, 605, luckUpgrade.price, board_text_style);       // Luck
-        this.add.image(310, 617, 'apple').setScale(2);
+        this.add.image(240, 617, 'apple').setScale(2);
         basketUpgrade.priceText = this.add.text(410, 605, basketUpgrade.price, board_text_style);   // Basket
-        this.add.image(460, 617, 'apple').setScale(2);
+        this.add.image(390, 617, 'apple').setScale(2);
 
         // Spending (excess) apples
         this.add.image(125, 675, 'apple').setScale(3);
@@ -505,6 +505,11 @@ class LevelEnd extends Phaser.Scene {
         }
         if (excessApples < basketUpgrade.price) {
             basketUpgrade.priceText.setColor("#a00");
+            basketUpgrade.icon.setScale(4).disableInteractive();
+        }
+        if (basketUpgrade.degree >= 2) {
+            basketUpgrade.priceText.setColor("#a00");
+            basketUpgrade.priceText.setText("MAX");
             basketUpgrade.icon.setScale(4).disableInteractive();
         }
         excessAppleText.setText(excessApples);
@@ -616,8 +621,11 @@ class GamePlay extends Phaser.Scene {
         this.load.image('tree', 'assets/tree.PNG');
         this.load.image('tiles', 'assets/ground_tileset.png');
         this.load.tilemapTiledJSON('ground', 'assets/ground.json');
-        this.load.spritesheet('playerB0', 'assets/player/playerB0.png', { frameWidth: 16 + 16*basketUpgrade.degree, frameHeight: 32});
-        this.load.spritesheet('playerB1', 'assets/player/playerB1.png', { frameWidth: 32, frameHeight: 32});
+        this.load.spritesheet('playerB0', 'assets/player/playerB0.png', { frameWidth: 16 + 16*basketUpgrade.degree, frameHeight: 32 });
+        this.load.spritesheet('playerB1', 'assets/player/playerB1.png', { frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('playerB2', 'assets/player/playerB2.png', { frameWidth: 48, frameHeight: 32 });
+        this.load.spritesheet('playerB2-1', 'assets/player/playerB2.1.png', { frameWidth: 48, frameHeight: 32 });
+        this.load.spritesheet('playerB2-0', 'assets/player/playerB2.0.png', { frameWidth: 48, frameHeight: 32 });
         this.load.spritesheet('monkey', 'assets/monkey.png', { frameWidth: 96, frameHeight: 96});
 
         // Mobile Play
@@ -655,41 +663,14 @@ class GamePlay extends Phaser.Scene {
         // Player creation & animations
         var playerSprite = 'playerB' + basketUpgrade.degree;
         player = this.physics.add.sprite(288, 500, playerSprite);
-        player.setCollideWorldBounds(true);
-        player.setBounce(0.2);
-        player.setScale(4);
+        player.setCollideWorldBounds(true)
+                .setBounce(0.2)
+                .setScale(4);
         player.body.setGravityY(1000);
-
-        if (!this.anims.exists('left') || basketUpgrade.degree > 0) {
-            if (basketUpgrade.degree > 0 && this.anims.anims.entries.left.frames[0].textureKey != playerSprite) { // If basket purchase has been made
-                this.anims.remove('left');
-                this.anims.remove('still');
-                this.anims.remove('right');
-                this.anims.remove('shock');
-            }
-            this.anims.create({
-                key: 'left',
-                frames: this.anims.generateFrameNumbers(playerSprite, { start: 0, end: 2}),
-                frameRate: 10,
-                repeat: -1
-            });
-            this.anims.create({
-                key: 'still',
-                frames: [ { key: playerSprite, frame: 2 } ],
-                frameRate: 20
-            });
-            this.anims.create({
-                key: 'right',
-                frames: this.anims.generateFrameNumbers(playerSprite, { start: 2, end: 4}),
-                frameRate: 10,
-                repeat: -1
-            });
-            this.anims.create({
-                key: 'shock',
-                frames: [ { key: playerSprite, frame: 5 }],
-                frameRate: 1
-            });
-        }   
+        if (basketUpgrade.degree >= 2) {
+            basketUpgrade.effect = 2;
+        }
+        makePlayerAnimations(this, playerSprite);
 
         // Monkeys
         monkey_right = this.physics.add.staticSprite(335, 340, 'monkey').setScale(4);
@@ -778,21 +759,6 @@ class GamePlay extends Phaser.Scene {
 
         // Player movement
         if (timeSinceHitByBanana < 35) {
-            if (timeSinceHitByBanana == 1) {
-                if (score > 1) {
-                    // When player is hit by banana, they lose an apple
-                    var lostApple = apples.create(player.getCenter().x, player.getCenter().y, 'mush')
-                        .setScale(3)      
-                        .setVelocityY(Phaser.Math.Between(-500,-500))
-                        .setVelocityX(Phaser.Math.Between(-500,500))
-                        .setGravityY(appleGravityY);
-                    lostApple.name = "mush";
-                    score--;
-                    scoreText.setText('SCORE: ' + score + '/' + applesNeeded);
-                }
-                stats.bananaHits++;
-                playSound("banana_hit");
-            }
             timeSinceHitByBanana++;
             player.anims.play('shock');
         }
@@ -858,6 +824,43 @@ class GamePlay extends Phaser.Scene {
                 }
             }
         }
+    }
+}
+
+function makePlayerAnimations(s, playerSprite) {
+    // If a basket purchase has been made, OR previous player sprite is different than current,
+    // remove all current player animations
+    if (basketUpgrade.degree > 0 ||
+        (s.anims.exists('left') && s.anims.anims.entries.left.frames[0].textureKey != playerSprite)) {
+        s.anims.remove('left');
+        s.anims.remove('still');
+        s.anims.remove('right');
+        s.anims.remove('shock');
+    }
+    // If no player animation exists, create them
+    if (!s.anims.exists('left')) {
+        s.anims.create({
+            key: 'left',
+            frames: s.anims.generateFrameNumbers(playerSprite, { start: 0, end: 2}),
+            frameRate: 10,
+            repeat: -1
+        });
+        s.anims.create({
+            key: 'still',
+            frames: [ { key: playerSprite, frame: 2 } ],
+            frameRate: 20
+        });
+        s.anims.create({
+            key: 'right',
+            frames: s.anims.generateFrameNumbers(playerSprite, { start: 2, end: 4}),
+            frameRate: 10,
+            repeat: -1
+        });
+        s.anims.create({
+            key: 'shock',
+            frames: [ { key: playerSprite, frame: 5 } ],
+            frameRate: 1
+        });
     }
 }
 
@@ -940,9 +943,34 @@ function animateMonkey(monkey) {
  */
 function bananaStrike(player, banana) {
     if ((banana.getCenter().x < player.getCenter().x + 60) && (banana.getCenter().x > player.getCenter().x - 60)) {
-        timeSinceHitByBanana = 0;
-        player.setVelocityX(-1*player.body.velocity.x);
-        player.setVelocityY(-1*player.y);
+        bananas.remove(banana);
+
+        // If final basket upgrade purchased, it will deflect 2 bananas
+        if (basketUpgrade.degree >= 2 && basketUpgrade.effect > 0) {
+            playSound("banana_deflect");
+            basketUpgrade.effect--;
+            banana.setVelocityX(-banana.body.velocity.x * 5);
+            banana.setVelocityY(-banana.body.velocity.y);
+            makePlayerAnimations(this, 'playerB2-' + basketUpgrade.effect);
+        }
+        else {
+            playSound("banana_hit");
+            timeSinceHitByBanana = 0;
+            player.setVelocityX(-1*player.body.velocity.x);
+            player.setVelocityY(-1*player.y);   
+            if (score > 1) {
+                // When player is hit by banana, they lose an apple
+                var lostApple = apples.create(player.getCenter().x, player.getCenter().y, 'mush')
+                    .setScale(3)      
+                    .setVelocityY(Phaser.Math.Between(-500,-500))
+                    .setVelocityX(Phaser.Math.Between(-500,500))
+                    .setGravityY(appleGravityY);
+                lostApple.name = "mush";
+                score--;
+                scoreText.setText('SCORE: ' + score + '/' + applesNeeded);
+            }
+            stats.bananaHits++;
+        }
     }
 }
 
