@@ -44,10 +44,10 @@ function initializeGame() {
     score = 0;
     excessApples = 0;
     level = 1;
-    applesNeeded = 6;
+    applesNeeded = 8;
     appleSpawnInterval = 2000;
     appleGravityY = 0;
-    monkeySpawnInterval = 30000;
+    monkeySpawnInterval = 31000;
     gamePaused = false;
     stats = {
         totalApples: 0,
@@ -70,12 +70,12 @@ function setUpNextLevel() {
     excessApples = 0;
     level++;
 
-    applesNeeded = 2*(level-1) + 6;
-    var numApplesToSpawn = Math.floor(2*(level-1) + 12 - (2*Math.floor(level/5)));
+    applesNeeded = 2*(level-1) + 2*(Math.floor(level/5)) + 8;
+    var numApplesToSpawn = applesNeeded + Math.floor(level/5) + 8;
     appleSpawnInterval = 1000 * Phaser.Math.RoundTo(timelimit/numApplesToSpawn, -2);
     appleGravityY = Math.floor(5*(level-1));
 
-    var numMonkeysToSpawn = Math.floor(level/2);
+    var numMonkeysToSpawn = level == 2 ? 1 : Math.floor(level/3);
     monkeySpawnInterval = 1000 * Phaser.Math.RoundTo(timelimit/(numMonkeysToSpawn+1), -2);
 }
 
@@ -780,9 +780,9 @@ class GamePlay extends Phaser.Scene {
         cursors = this.input.keyboard.createCursorKeys();
 
         // Mobile Play
-        jump_button = this.add.image(188, 750, 'jump').setScale(4).setInteractive();
-        left_button = this.add.sprite(288, 750, 'left').setScale(4).setInteractive();
-        right_button = this.add.image(388, 750, 'right').setScale(4).setInteractive();
+        jump_button = this.add.image(158, 750, 'jump').setScale(4).setInteractive();
+        left_button = this.add.image(288, 750, 'left').setScale(4).setInteractive();
+        right_button = this.add.image(418, 750, 'right').setScale(4).setInteractive();
         var pause_button = this.add.image(40, 790, 'pause').setScale(3).setInteractive();
 
         pause_button.on('pointerdown', () => {
@@ -847,21 +847,23 @@ class GamePlay extends Phaser.Scene {
 
             // Mobile Play
             if (mobilePlayOn) {
-                left_button.visible, right_button.visible, jump_button.visible = true;
+                left_button.visible = true;
+                right_button.visible = true;
+                jump_button.visible = true;
 
                 var pointer = game.input.activePointer;
                 if (pointer.isDown) {
                     // There is definitely a better/proper way to handle this... But this works for now. Ish.
     
                     // Move left
-                    if ((pointer.downX > 256 && pointer.downX < 320)
-                    && (pointer.downY > 718 && pointer.downY < 782)) {
+                    if ((pointer.downX > left_button.x-32 && pointer.downX < left_button.x+32)
+                    && (pointer.downY > left_button.y-32 && pointer.downY < left_button.y+32)) {
                         player.setVelocityX(-speedUpgrade.effect * speedPenalty);
                         player.anims.play('left', true);
                     }
                     // Move right
-                    else if ((pointer.downX > 356 && pointer.downX < 420)
-                    && (pointer.downY > 718 && pointer.downY < 782)) {
+                    else if ((pointer.downX > right_button.x-32 && pointer.downX < right_button.x+32)
+                    && (pointer.downY > right_button.y-32 && pointer.downY < right_button.y+32)) {
                         player.setVelocityX(speedUpgrade.effect * speedPenalty);
                         player.anims.play('right', true);
                     }
