@@ -953,7 +953,7 @@ function spawnApple() {
  * Spawns a monkey on either the left or right side of the tree.
  */
 function spawnMonkey() {
-    var monkeyToSpawn = monkey_right;
+    var monkeyToSpawn = Phaser.Math.Between(0, 1) == 0 ? monkey_right : monkey_left;
     if (!gamePaused) {
         if (monkey_right.visible && !monkey_left.visible) {
             monkeyToSpawn = monkey_left;
