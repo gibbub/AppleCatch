@@ -107,7 +107,7 @@ class StartScreen extends Phaser.Scene {
         var how_to_button = this.add.sprite(288, 600, 'how-to-button').setScale(3).setInteractive();
         var mobile_play_toggle = this.add.sprite(260, 715, 'mobile-play-toggle').setScale(3).setInteractive();
         var sound_toggle = this.add.sprite(385, 715, 'sound-toggle').setScale(3).setInteractive();
-        this.add.text(125, 780, "Gabby Albrecht 2024", colorful_text_style);
+        this.add.text(95, 780, "Gabby Albrecht 2024", colorful_text_style);
 
         // Spawn apples when Game Title is clicked
         var startScreenApples = this.physics.add.group();
@@ -466,7 +466,7 @@ class LevelEnd extends Phaser.Scene {
         var i = 0;
         setInterval(() => {
             if (i < levelEndText.length) {
-                this.add.text(75, 240 + i*30, levelEndText[i], board_text_style);
+                this.add.text(75, 250 + i*30, levelEndText[i], board_text_style);
             } else return;
             i++;
         }, 500);
@@ -481,16 +481,16 @@ class LevelEnd extends Phaser.Scene {
         }
 
         // Upgrade prices
-        speedUpgrade.priceText = this.add.text(110, 605, speedUpgrade.price, board_text_style);     // Speed
+        speedUpgrade.priceText = this.add.text(110, 610, speedUpgrade.price, board_text_style);     // Speed
         this.add.image(90, 617, 'apple').setScale(2);
-        luckUpgrade.priceText = this.add.text(260, 605, luckUpgrade.price, board_text_style);       // Luck
+        luckUpgrade.priceText = this.add.text(260, 610, luckUpgrade.price, board_text_style);       // Luck
         this.add.image(240, 617, 'apple').setScale(2);
-        basketUpgrade.priceText = this.add.text(410, 605, basketUpgrade.price, board_text_style);   // Basket
+        basketUpgrade.priceText = this.add.text(410, 610, basketUpgrade.price, board_text_style);   // Basket
         this.add.image(390, 617, 'apple').setScale(2);
 
         // Spending (excess) apples
         this.add.image(125, 675, 'apple').setScale(3);
-        excessAppleText = this.add.text(150, 668, excessApples, board_text_style);
+        excessAppleText = this.add.text(150, 675, excessApples, board_text_style);
 
         // Upgrade Button functions
         var upgrades = [speedUpgrade, luckUpgrade, basketUpgrade];
@@ -627,7 +627,7 @@ class GameOver extends Phaser.Scene {
         var i = 0;
         setInterval(() => {
             if (i < gameover_messages.length) {
-                this.add.text(100, 275 + i*30, gameover_messages[i], board_text_style);
+                this.add.text(95, 275 + i*30, gameover_messages[i], board_text_style);
             }
             else return;
 
@@ -713,7 +713,7 @@ class GamePlay extends Phaser.Scene {
         this.add.text(16, 45, 'Level ' + level, colorful_text_style);
 
         this.initialTime = timelimit;
-        countdownText = this.add.text(325, 16, 
+        countdownText = this.add.text(300, 16, 
             'TIME LEFT: ' + formatTime(this.initialTime),
             colorful_text_style
         );
@@ -1087,7 +1087,7 @@ function turnAppleToMush(apple) {
  * @returns String of time in minutes:seconds format.
  */
 function formatTime(seconds) {
-    return `0:${seconds.toString().padStart(2, '0')}`;
+    return `${seconds.toString()}`;
 }
 
 /**
@@ -1125,17 +1125,17 @@ function playSound(name) {
 
 // Text styles
 var howto_text_style = {
-    fontFamily: '"Pixelify Sans", sans-serif',
-    fontSize: '25px',
+    fontFamily: '"Press Start"',
+    fontSize: '16px',
     fill: '#4a1c1a',
     stroke: '#c17f38',
     strokeThickness: 3,
     align: 'center',
-    wordWrap: { width: 375 }
+    wordWrap: { width: 350 }
 };
 var colorful_text_style = {
-    fontFamily: '"Pixelify Sans", sans-serif',
-    fontSize: '32px',
+    fontFamily: '"Press Start"',
+    fontSize: '20px',
     fill: '#fe3',
     stroke: '#f54',
     strokeThickness: 3,
@@ -1148,13 +1148,12 @@ var colorful_text_style = {
     }
 };
 var board_text_style = {
-    fontFamily: '"Pixelify Sans", sans-serif',
-    fontSize: '28px',
+    fontFamily: '"Press Start"',
+    fontSize: '16px',
     fill: '#4a1c1a',
     stroke: '#c17f38',
     strokeThickness: 3,
     align: 'left',
-    wordWrap: { width: 375 }
 }
 
 // Game configuration
