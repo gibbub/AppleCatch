@@ -34,7 +34,6 @@ var timeouts = [];
 // Mobile Play & Sound
 var mobilePlayOn = false;
 var jump_button, left_button, right_button;
-var soundOn = true;
 var gameplayMusic;
 
 /**
@@ -90,6 +89,10 @@ class StartScreen extends Phaser.Scene {
     }
 
     preload() {
+        this.load.audio('game-start', [ 'assets/sounds/game_start.mp3']);
+        this.load.audio('exit', [ 'assets/sounds/exit.mp3' ]);
+        this.load.audio('select', [ 'assets/sounds/select.mp3' ]);
+
         this.load.image('bg', 'assets/bg_plain.PNG');
         this.load.image('bg-with-tree', 'assets/bg_tree2.PNG');
         this.load.image('game-title', 'assets/start_screen/game_title.PNG');
@@ -112,7 +115,7 @@ class StartScreen extends Phaser.Scene {
         // Spawn apples when Game Title is clicked
         var startScreenApples = this.physics.add.group();
         game_title.on('pointerdown', () => {
-            Phaser.Math.Between(1,2) == 1 ? playSound("exit") : playSound("select");
+            Phaser.Math.Between(1,2) == 1 ? this.sound.play('exit') : this.sound.play('select');
             startScreenApples.create(game.input.activePointer.x, game.input.activePointer.y, 'apple')
                             .setScale(3)
                             .setVelocityY(Phaser.Math.Between(-100,-350))
@@ -122,7 +125,7 @@ class StartScreen extends Phaser.Scene {
 
         // Start Button Function        
         start_button.on('pointerdown', () => {
-            playSound("game_start");
+            this.sound.play("game-start");
             this.scene.stop();
             initializeGame();
             this.scene.start('GamePlay');   
@@ -136,7 +139,7 @@ class StartScreen extends Phaser.Scene {
 
         // How to Button Function
         how_to_button.on('pointerdown', () => {
-            playSound("select");
+            this.sound.play("select");
             this.scene.stop();
             this.scene.start('HowToPlay');
         });
@@ -160,12 +163,12 @@ class StartScreen extends Phaser.Scene {
         })
         mobile_play_toggle.on('pointerdown', () => {
             if (mobilePlayOn) {
-                playSound("exit");
+                this.sound.play("exit");
                 mobilePlayOn = false;
                 mobile_play_toggle.anims.play('mobile-play-off');
             }
             else {
-                playSound("select");
+                this.sound.play("select");
                 mobilePlayOn = true;
                 mobile_play_toggle.anims.play('mobile-play-on');
             }
@@ -186,17 +189,17 @@ class StartScreen extends Phaser.Scene {
             frameRate: 1
         })
         sound_toggle.on('pointerdown', () => {
-            if (soundOn) {
-                soundOn = false;
+            if (!game.sound.mute) {
+                game.sound.mute = true;
                 sound_toggle.anims.play('sound-off');
             }
             else { 
-                soundOn = true;
+                game.sound.mute = false;
                 sound_toggle.anims.play('sound-on');
-                playSound("select");
+                this.sound.play("select");
             }
         });
-        if (!soundOn) {
+        if (game.sound.mute) {
             sound_toggle.play('sound-off');
         }
     }
@@ -238,7 +241,7 @@ class HowToPlay extends Phaser.Scene {
 
         // Exit Button function
         exit_button.on('pointerdown', () => {
-            playSound("exit");
+            this.sound.play("exit");
             this.scene.stop();
             if (gamePaused) {
                 this.scene.start('PauseGame');
@@ -300,13 +303,11 @@ class PauseGame extends Phaser.Scene {
 
         // Exit Button function
         exit_button.on('pointerdown', () => {
-            playSound("exit");
+            this.sound.play("exit");
             this.scene.stop();
             gamePaused = false;
             game.scene.resume('GamePlay');
-            if (soundOn) {
-                gameplayMusic.play();
-            }
+            gameplayMusic.resume();
         });
         exit_button.on('pointerover', function(pointer) {
             this.setScale(2.5);
@@ -317,7 +318,7 @@ class PauseGame extends Phaser.Scene {
 
         // How to Button function
         how_to_button.on('pointerdown', () => {
-            playSound("select");
+            this.sound.play("select");
             this.scene.stop();
             this.scene.moveAbove('GamePlay', 'HowToPlay');
             this.scene.start('HowToPlay');
@@ -331,7 +332,7 @@ class PauseGame extends Phaser.Scene {
 
         // Exit To Main Button function
         exit_to_main_button.on('pointerdown', () => {
-            playSound("select");
+            this.sound.play("select");
             this.scene.stop();
             this.scene.stop('GamePlay');
             gamePaused = false;
@@ -348,12 +349,12 @@ class PauseGame extends Phaser.Scene {
         // Mobile Play Toggle
         mobile_play_toggle.on('pointerdown', () => {
             if (mobilePlayOn) {
-                playSound("exit");
+                this.sound.play("exit");
                 mobilePlayOn = false;
                 mobile_play_toggle.anims.play('mobile-play-off');
             }
             else {
-                playSound("select");
+                this.sound.play("select");
                 mobilePlayOn = true;
                 mobile_play_toggle.anims.play('mobile-play-on');
             }
@@ -364,17 +365,17 @@ class PauseGame extends Phaser.Scene {
 
         // Sound Toggle
         sound_toggle.on('pointerdown', () => {
-            if (soundOn) {
-                soundOn = false;
+            if (!game.sound.mute) {
+                game.sound.mute = true;
                 sound_toggle.anims.play('sound-off');
             }
             else { 
-                soundOn = true;
+                game.sound.mute = false;
                 sound_toggle.anims.play('sound-on');
-                playSound("select");
+                this.sound.play("select");
             }
         });
-        if (!soundOn) {
+        if (game.sound.mute) {
             sound_toggle.play('sound-off');
         }
     }
@@ -382,9 +383,7 @@ class PauseGame extends Phaser.Scene {
     update() {
         this.input.keyboard.on('keydown-ESC', () => {
             gamePaused = false;
-            if (soundOn) {
-                gameplayMusic.play();
-            }
+            gameplayMusic.resume();
         });
         if (!gamePaused) {
             this.scene.stop();
@@ -405,6 +404,9 @@ class LevelEnd extends Phaser.Scene {
     }
 
     preload() {
+        this.load.audio('stinger', [ 'assets/sounds/stinger.mp3' ]);
+        this.load.audio('upgrade', [ 'assets/sounds/upgrade.mp3' ]);
+
         this.load.image('level-end-board', 'assets/level_end/level_end_board.PNG');
         this.load.image('boots', speedUpgrade.sprite);
         this.load.image('luck', luckUpgrade.sprite);
@@ -417,7 +419,7 @@ class LevelEnd extends Phaser.Scene {
     }
 
     create() {
-        playSound("stinger");
+        this.sound.play("stinger");
 
         this.add.image(288, 400, 'level-end-board').setScale(5.5);
         speedUpgrade.icon = this.add.image(140, 500, 'boots').setScale(4).setInteractive();
@@ -506,7 +508,7 @@ class LevelEnd extends Phaser.Scene {
             else {
                 // Purchased upgrades update their respective variables
                 currUpgrade.icon.on('pointerdown', function (pointer) {
-                    playSound("upgrade");
+                    game.sound.play("upgrade");
                     excessApples = excessApples - currUpgrade.price;
                     currUpgrade.applyUpgradeToGame();
                     currUpgrade.price = currUpgrade.price + 8;
@@ -528,7 +530,7 @@ class LevelEnd extends Phaser.Scene {
 
         // Next Level Button function
         next_button.on('pointerdown', () => {
-            playSound("select");
+            this.sound.play("select");
             setUpNextLevel();
             this.scene.stop();
             this.scene.start('GamePlay');
@@ -585,6 +587,7 @@ class GameOver extends Phaser.Scene {
     }
 
     preload() {
+        this.load.audio('gameover', [ 'assets/sounds/gameover.mp3' ]);
         this.load.image('gameover-board', 'assets/vert_blank_board.png');
         this.load.image('exit-to-main-button', 'assets/exit_to_main_button.PNG');
         this.load.image('restart-button', 'assets/start_screen/start_button.PNG');
@@ -593,7 +596,7 @@ class GameOver extends Phaser.Scene {
     }
 
     create() {
-        playSound("gameover");
+        this.sound.play("gameover");
 
         this.add.image(288, 416, 'bg-with-tree');
         this.add.image(288, 400, 'gameover-board').setScale(5.5);
@@ -636,7 +639,7 @@ class GameOver extends Phaser.Scene {
 
         // Restart Button function
         restart_button.on('pointerdown', () => {
-            playSound("game_start");
+            this.sound.play("game-start");
             this.scene.stop();
             initializeGame();
             this.scene.start('GamePlay');  
@@ -650,7 +653,7 @@ class GameOver extends Phaser.Scene {
 
         // Exit To Main Button function
         exit_to_main_button.on('pointerdown', () => {
-            playSound("select");
+            this.sound.play("select");
             this.scene.stop();
             this.scene.start('StartScreen');
         });
@@ -673,6 +676,13 @@ class GamePlay extends Phaser.Scene {
     }
 
      preload() {
+        this.load.audio('game_music', [ 'assets/sounds/game_music.mp3' ]);
+        this.load.audio('collect', [ 'assets/sounds/collect.mp3'] );
+        this.load.audio('golden-collect', [ 'assets/sounds/golden_collect.mp3'] );
+        this.load.audio('monkey-laugh', [ 'assets/sounds/monkey_laugh.mp3'] );
+        this.load.audio('banana-deflect', [ 'assets/sounds/banana_deflect.mp3'] );
+        this.load.audio('banana-hit', [ 'assets/sounds/banana_hit.mp3'] );
+
         this.load.image('mush', 'assets/mush.PNG');
         this.load.image('golden-apple', 'assets/golden_apple.PNG');
         this.load.image('golden-mush', 'assets/golden_mush.PNG');
@@ -696,7 +706,8 @@ class GamePlay extends Phaser.Scene {
 
      create() { 
         gamePaused = false;
-        gameplayMusic = playSound("game_music");
+        gameplayMusic = this.sound.add('game_music');
+        gameplayMusic.play();
 
         // Background & ground graphics
         this.add.image(288, 416, 'bg');
@@ -786,7 +797,7 @@ class GamePlay extends Phaser.Scene {
         var pause_button = this.add.image(40, 790, 'pause').setScale(3).setInteractive();
 
         pause_button.on('pointerdown', () => {
-            playSound("select");
+            this.sound.play("select");
             gamePaused = true;
         });
     }
@@ -986,7 +997,7 @@ function animateMonkey(monkey) {
 
     timeouts.push(setTimeout( () => {   // Giggle
         monkey.anims.play('giggle');
-        playSound("monkey_laugh");
+        game.sound.play("monkey-laugh");
     }, bananaInterval + 1000));
 
     timeouts.push(setTimeout( () => {   // Disappear
@@ -1008,14 +1019,14 @@ function bananaStrike(player, banana) {
 
         // If final basket upgrade purchased, it will deflect 2 bananas
         if (basketUpgrade.degree >= 2 && basketUpgrade.effect > 0) {
-            playSound("banana_deflect");
+            game.sound.play("banana-deflect");
             basketUpgrade.effect--;
             banana.setVelocityX(-banana.body.velocity.x * 5);
             banana.setVelocityY(-banana.body.velocity.y);
             makePlayerAnimations(this, 'playerB2-' + basketUpgrade.effect);
         }
         else {
-            playSound("banana_hit");
+            game.sound.play("banana-hit");
             timeSinceHitByBanana = 0;
             player.setVelocityX(-1*player.body.velocity.x);
             player.setVelocityY(-1*player.y);   
@@ -1057,11 +1068,11 @@ function processAppleCollision(player, apple) {
 function collectApple(apple) {
     apple.disableBody(true, true);
     if (apple.name == "golden") {
-        playSound("golden_collect");
+        game.sound.play("golden-collect");
         score = score + 4;
         stats.goldenApples++;
     }
-    else { playSound("collect"); }
+    else { game.sound.play("collect"); }
     score++;
     scoreText.setText('SCORE: ' + score + '/' + applesNeeded);
     stats.totalApples++;
@@ -1108,19 +1119,6 @@ function stopTimer() {
 function onEvent() {
     this.initialTime--;
     countdownText.setText('TIME LEFT: ' + formatTime(this.initialTime));
-}
-
-/**
- * Plays a specified sound track.
- * @param {String} name : Name of audio to play.
- * @returns The Audio object.
- */
-function playSound(name) {
-    if (soundOn) {
-        var audio = new Audio("assets/sounds/" + name + ".mp3");
-        audio.play();
-        return audio;
-    } else return new Audio();
 }
 
 // Text styles
