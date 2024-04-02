@@ -676,6 +676,37 @@ class GamePlay extends Phaser.Scene {
     }
 
      preload() {
+        // Load Progress Bar!
+        var progressBar = this.add.graphics();
+        var progressBox = this.add.graphics();
+        progressBox.fillStyle(0x04577b, 0.5);
+        progressBox.fillRect(130, 300, 320, 50);
+
+        var percentText = this.make.text({ x:288, y: 325, text: '0%', style: board_text_style });
+        percentText.setOrigin(0.5, 0.5);
+        
+        var assetText = this.make.text({ x: 288, y: 370, text: '', style: board_text_style });
+        assetText.setOrigin(0.5, 0.5);
+
+        this.load.on('progress', function (value) {
+            percentText.setText(parseInt(value * 100) + '%');
+            progressBar.clear();
+            progressBar.fillStyle(0xceeffd, 1);
+            progressBar.fillRect(140, 310, 300 * value, 30);
+        });
+
+        this.load.on('fileprogress', function (file) {
+            assetText.setText("Loading: " + file.key);
+        });
+
+        this.load.on('complete', function () {
+            assetText.destroy();
+            percentText.destroy();
+            progressBar.destroy();
+            progressBox.destroy();
+        });
+
+        // Assets to load
         this.load.audio('game_music', [ 'assets/sounds/game_music.mp3' ]);
         this.load.audio('collect', [ 'assets/sounds/collect.mp3'] );
         this.load.audio('golden-collect', [ 'assets/sounds/golden_collect.mp3'] );
@@ -702,6 +733,8 @@ class GamePlay extends Phaser.Scene {
         this.load.image('left', 'assets/mobile_play/left.PNG');
         this.load.image('right', 'assets/mobile_play/right.PNG');
         this.load.image('pause', 'assets/mobile_play/pause.PNG');
+        
+        this.load.image('have fun!', 'assets/apple.PNG');
     }
 
      create() { 
