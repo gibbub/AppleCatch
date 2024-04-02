@@ -70,7 +70,7 @@ function setUpNextLevel() {
     level++;
 
     applesNeeded = 2*(level-1) + 2*(Math.floor(level/5)) + 8;
-    var numApplesToSpawn = applesNeeded + Math.floor(level/5) + 8;
+    var numApplesToSpawn = applesNeeded - Math.floor(level/5) + 6;
     appleSpawnInterval = 1000 * Phaser.Math.RoundTo(timelimit/numApplesToSpawn, -2);
     appleGravityY = Math.floor(5*(level-1));
 
@@ -427,35 +427,37 @@ class LevelEnd extends Phaser.Scene {
         basketUpgrade.icon = this.add.image(440, 500, 'basket').setScale(4).setInteractive();
         var next_button = this.add.image(375, 685, 'next').setScale(3.5).setInteractive();
 
-        // Text Animations
-        this.anims.create({
-            key: 'amazing-text',
-            frames: this.anims.generateFrameNumbers('amazing-text', { start: 0, end: 14 }),
-            frameRate: 10,
-            repeat: -1
-        });
-        this.anims.create({
-            key: 'nice-text',
-            frames: this.anims.generateFrameNumbers('nice-text', { start: 0, end: 6 }),
-            frameRate: 8,
-            repeat: -1
-        });
+        if (!this.anims.exists('amazing-text')){
+            // Text Animations
+            this.anims.create({
+                key: 'amazing-text',
+                frames: this.anims.generateFrameNumbers('amazing-text', { start: 0, end: 14 }),
+                frameRate: 10,
+                repeat: -1
+            });
+            this.anims.create({
+                key: 'nice-text',
+                frames: this.anims.generateFrameNumbers('nice-text', { start: 0, end: 6 }),
+                frameRate: 8,
+                repeat: -1
+            });
 
-        // Level end animations
-        this.anims.create({
-            key: 'grandma-dance',
-            frames: this.anims.generateFrameNumbers('grandma-dance', { start: 0, end: 2 }),
-            frameRate: 8,
-            repeat: -1,
-            yoyo: 1
-        });
-        this.anims.create({
-            key: 'player-dance',
-            frames: this.anims.generateFrameNumbers('player-dance', { start: 1, end: 3 }),
-            frameRate: 8,
-            repeat: -1,
-            yoyo: 1
-        });
+            // Level end animations
+            this.anims.create({
+                key: 'grandma-dance',
+                frames: this.anims.generateFrameNumbers('grandma-dance', { start: 0, end: 2 }),
+                frameRate: 8,
+                repeat: -1,
+                yoyo: 1
+            });
+            this.anims.create({
+                key: 'player-dance',
+                frames: this.anims.generateFrameNumbers('player-dance', { start: 1, end: 3 }),
+                frameRate: 8,
+                repeat: -1,
+                yoyo: 1
+            });
+        }
 
         // End of level stats
         excessApples = score > applesNeeded ? score - applesNeeded : 0;
@@ -485,8 +487,10 @@ class LevelEnd extends Phaser.Scene {
         // Upgrade prices
         speedUpgrade.priceText = this.add.text(110, 610, speedUpgrade.price, board_text_style);     // Speed
         this.add.image(90, 617, 'apple').setScale(2);
+
         luckUpgrade.priceText = this.add.text(260, 610, luckUpgrade.price, board_text_style);       // Luck
         this.add.image(240, 617, 'apple').setScale(2);
+
         basketUpgrade.priceText = this.add.text(410, 610, basketUpgrade.price, board_text_style);   // Basket
         this.add.image(390, 617, 'apple').setScale(2);
 
@@ -497,15 +501,18 @@ class LevelEnd extends Phaser.Scene {
         // Upgrade Button functions
         var upgrades = [speedUpgrade, luckUpgrade, basketUpgrade];
         for (const currUpgrade of upgrades) {
+
             // Visualize how many times upgrade has been purchased
             for (var i=0; i < currUpgrade.degree; i++) {
                 currUpgrade.priceText.setText(currUpgrade.priceText.text + "*");
             }
+
             // If player cannot afford upgrade
             if (excessApples < currUpgrade.price) {
                 currUpgrade.priceText.setColor("#a00");
             }
             else {
+                
                 // Purchased upgrades update their respective variables
                 currUpgrade.icon.on('pointerdown', function (pointer) {
                     game.sound.play("upgrade");
@@ -513,19 +520,15 @@ class LevelEnd extends Phaser.Scene {
                     currUpgrade.applyUpgradeToGame();
                     currUpgrade.price = currUpgrade.price + 8;
                     currUpgrade.priceText.setText(currUpgrade.price);
+
                     for (var i=0; i < currUpgrade.degree; i++) {
                         currUpgrade.priceText.setText(currUpgrade.priceText.text + "*");
                     }
                     stats.upgradesPurchased++;
                 });
-                currUpgrade.icon.on('pointerover', function(pointer) {
-                    this.setScale(4.5);
-                });
-                currUpgrade.icon.on('pointerout', function (pointer) {
-                    this.setScale(4);
-                });
+                currUpgrade.icon.on('pointerover', function(pointer) { this.setScale(4.5); });
+                currUpgrade.icon.on('pointerout', function (pointer) { this.setScale(4); });
             }
-
         }
 
         // Next Level Button function
@@ -535,18 +538,15 @@ class LevelEnd extends Phaser.Scene {
             this.scene.stop();
             this.scene.start('GamePlay');
         });
-        next_button.on('pointerover', function(pointer) {
-            this.setScale(3);
-        });
-        next_button.on('pointerout', function (pointer) {
-            this.setScale(3.5);
-        });
+        next_button.on('pointerover', function(pointer) { this.setScale(3); });
+        next_button.on('pointerout', function (pointer) { this.setScale(3.5); });
         
         this.counter = 0;
     }
 
     update() {
         this.input.keyboard.on('keydown-ENTER', () => {
+            
             if (this.counter == 0) {
                 this.counter++;
                 this.scene.stop();
@@ -572,8 +572,6 @@ class LevelEnd extends Phaser.Scene {
             basketUpgrade.priceText.setText("MAX**");
         }
         excessAppleText.setText(excessApples);
-
-
     }
 }
 
@@ -604,18 +602,21 @@ class GameOver extends Phaser.Scene {
         var restart_button = this.add.image(288, 550, 'restart-button').setScale(2.5).setInteractive();
         
         // Game over animations
-        this.anims.create({
-            key: 'you-lose-text',
-            frames: this.anims.generateFrameNumbers('you-lose-text', { start: 1, end: 0 }),
-            frameRate: 10,
-            repeat: 5
-        });
-        this.anims.create({
-            key: 'gameover-anim',
-            frames: this.anims.generateFrameNumbers('gameover-anim', { start: 0, end: 1 }),
-            frameRate: 8,
-            repeat: -1
-        });
+        if (!this.anims.exists('gameover-anim')){
+            this.anims.create({
+                key: 'you-lose-text',
+                frames: this.anims.generateFrameNumbers('you-lose-text', { start: 1, end: 0 }),
+                frameRate: 10,
+                repeat: 5
+            });
+            this.anims.create({
+                key: 'gameover-anim',
+                frames: this.anims.generateFrameNumbers('gameover-anim', { start: 0, end: 1 }),
+                frameRate: 8,
+                repeat: -1
+            });
+        }
+
         this.physics.add.staticSprite(225, 190, 'you-lose-text').setScale(3).anims.play('you-lose-text');
         this.physics.add.staticSprite(425, 180, 'gameover-anim').setScale(4).anims.play('gameover-anim');
 
@@ -733,7 +734,7 @@ class GamePlay extends Phaser.Scene {
         this.load.image('left', 'assets/mobile_play/left.PNG');
         this.load.image('right', 'assets/mobile_play/right.PNG');
         this.load.image('pause', 'assets/mobile_play/pause.PNG');
-        
+
         this.load.image('have fun!', 'assets/apple.PNG');
     }
 
@@ -1102,7 +1103,7 @@ function collectApple(apple) {
     apple.disableBody(true, true);
     if (apple.name == "golden") {
         game.sound.play("golden-collect");
-        score = score + 4;
+        score = score + 2;
         stats.goldenApples++;
     }
     else { game.sound.play("collect"); }
