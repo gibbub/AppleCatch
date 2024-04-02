@@ -13,8 +13,8 @@ var cursors;
 // Vars that change with each level
 var level = 1;
 var applesNeeded = 8;
-var appleSpawnInterval = 2000;
 var appleGravityY = 0;
+var appleSpawnInterval = 2000;
 var monkeySpawnInterval = 30000;
 
 // Upgrades
@@ -48,6 +48,7 @@ function initializeGame() {
     appleGravityY = 0;
     monkeySpawnInterval = 31000;
     gamePaused = false;
+
     stats = {
         totalApples: 0,
         goldenApples: 0,
@@ -92,7 +93,6 @@ class StartScreen extends Phaser.Scene {
         this.load.audio('game-start', [ 'assets/sounds/game_start.mp3']);
         this.load.audio('exit', [ 'assets/sounds/exit.mp3' ]);
         this.load.audio('select', [ 'assets/sounds/select.mp3' ]);
-
         this.load.image('bg', 'assets/bg_plain.PNG');
         this.load.image('bg-with-tree', 'assets/bg_tree2.PNG');
         this.load.image('game-title', 'assets/start_screen/game_title.PNG');
@@ -116,6 +116,7 @@ class StartScreen extends Phaser.Scene {
         var startScreenApples = this.physics.add.group();
         game_title.on('pointerdown', () => {
             Phaser.Math.Between(1,2) == 1 ? this.sound.play('exit') : this.sound.play('select');
+            
             startScreenApples.create(game.input.activePointer.x, game.input.activePointer.y, 'apple')
                             .setScale(3)
                             .setVelocityY(Phaser.Math.Between(-100,-350))
@@ -130,12 +131,8 @@ class StartScreen extends Phaser.Scene {
             initializeGame();
             this.scene.start('GamePlay');   
         });
-        start_button.on('pointerover', function(pointer) {
-            this.setScale(2.9);
-        });
-        start_button.on('pointerout', function (pointer) {
-            this.setScale(3);
-        });
+        start_button.on('pointerover', function(pointer) { this.setScale(2.9); });
+        start_button.on('pointerout', function (pointer) { this.setScale(3); });
 
         // How to Button Function
         how_to_button.on('pointerdown', () => {
@@ -143,24 +140,20 @@ class StartScreen extends Phaser.Scene {
             this.scene.stop();
             this.scene.start('HowToPlay');
         });
-        how_to_button.on('pointerover', function(pointer) {
-            this.setScale(2.9);
-        });
-        how_to_button.on('pointerout', function (pointer) {
-            this.setScale(3);
-        });
+        how_to_button.on('pointerover', function(pointer) { this.setScale(2.9); });
+        how_to_button.on('pointerout', function (pointer) { this.setScale(3); });
 
         // Mobile Play Toggle
-        this.anims.create({
-            key: 'mobile-play-off',
-            frames: [ { key: 'mobile-play-toggle', frame: 0 }],
-            frameRate: 1
-        });
-        this.anims.create({
-            key: 'mobile-play-on',
-            frames: [ { key: 'mobile-play-toggle', frame: 1}],
-            frameRate: 1
-        })
+        if (!this.anims.exists('mobile-play-off')) {
+            this.anims.create({
+                key: 'mobile-play-off',
+                frames: [ { key: 'mobile-play-toggle', frame: 0 }],
+            });
+            this.anims.create({
+                key: 'mobile-play-on',
+                frames: [ { key: 'mobile-play-toggle', frame: 1}],
+            })    
+        }
         mobile_play_toggle.on('pointerdown', () => {
             if (mobilePlayOn) {
                 this.sound.play("exit");
@@ -173,21 +166,21 @@ class StartScreen extends Phaser.Scene {
                 mobile_play_toggle.anims.play('mobile-play-on');
             }
         });
-        if (mobilePlayOn) {
-            mobile_play_toggle.anims.play('mobile-play-on');
-        }
+        if (mobilePlayOn) { mobile_play_toggle.anims.play('mobile-play-on'); }
 
         // Sound Toggle
-        this.anims.create({
-            key: 'sound-on',
-            frames: [ { key: 'sound-toggle', frame: 0 }],
-            frameRate: 1
-        });
-        this.anims.create({
-            key: 'sound-off',
-            frames: [ { key: 'sound-toggle', frame: 1 }],
-            frameRate: 1
-        })
+        if (!this.anims.exists('sound-on')) {
+            this.anims.create({
+                key: 'sound-on',
+                frames: [ { key: 'sound-toggle', frame: 0 }],
+            });
+            this.anims.create({
+                key: 'sound-off',
+                frames: [ { key: 'sound-toggle', frame: 1 }],
+            })
+        }
+        if (game.sound.mute) { sound_toggle.play('sound-off'); }
+
         sound_toggle.on('pointerdown', () => {
             if (!game.sound.mute) {
                 game.sound.mute = true;
@@ -199,9 +192,6 @@ class StartScreen extends Phaser.Scene {
                 this.sound.play("select");
             }
         });
-        if (game.sound.mute) {
-            sound_toggle.play('sound-off');
-        }
     }
 }
 
@@ -231,13 +221,7 @@ class HowToPlay extends Phaser.Scene {
         "How many can you catch?\n\n" +
         "Use extra apples to buy upgrades, or let them carry over to the next level.\n" +
         "Beware of mischevious critters who try to distract you...";
-        this.make.text({
-            x: 288, 
-            y: 345, 
-            text: instructions,
-            origin: { x: 0.5, y: 0.5 },
-            style: howto_text_style
-        });
+        this.make.text({ x: 288, y: 345, text: instructions, origin: { x: 0.5, y: 0.5 }, style: howto_text_style });
 
         // Exit Button function
         exit_button.on('pointerdown', () => {
@@ -245,14 +229,12 @@ class HowToPlay extends Phaser.Scene {
             this.scene.stop();
             if (gamePaused) {
                 this.scene.start('PauseGame');
-            } else { this.scene.start('StartScreen'); }
+            } else { 
+                this.scene.start('StartScreen'); 
+            }
         });
-        exit_button.on('pointerover', function(pointer) {
-            this.setScale(2.5);
-        });
-        exit_button.on('pointerout', function (pointer) {
-            this.setScale(3);
-        });
+        exit_button.on('pointerover', function(pointer) { this.setScale(2.5); });
+        exit_button.on('pointerout', function (pointer) { this.setScale(3); });
     }
 
     update() {
@@ -309,12 +291,8 @@ class PauseGame extends Phaser.Scene {
             game.scene.resume('GamePlay');
             gameplayMusic.resume();
         });
-        exit_button.on('pointerover', function(pointer) {
-            this.setScale(2.5);
-        });
-        exit_button.on('pointerout', function (pointer) {
-            this.setScale(3);
-        });
+        exit_button.on('pointerover', function(pointer) { this.setScale(2.5); });
+        exit_button.on('pointerout', function (pointer) { this.setScale(3); });
 
         // How to Button function
         how_to_button.on('pointerdown', () => {
@@ -323,12 +301,8 @@ class PauseGame extends Phaser.Scene {
             this.scene.moveAbove('GamePlay', 'HowToPlay');
             this.scene.start('HowToPlay');
         });
-        how_to_button.on('pointerover', function(pointer) {
-            this.setScale(2.9);
-        });
-        how_to_button.on('pointerout', function (pointer) {
-            this.setScale(3);
-        });
+        how_to_button.on('pointerover', function(pointer) { this.setScale(2.9); });
+        how_to_button.on('pointerout', function (pointer) { this.setScale(3); });
 
         // Exit To Main Button function
         exit_to_main_button.on('pointerdown', () => {
@@ -339,12 +313,8 @@ class PauseGame extends Phaser.Scene {
             stopTimer();
             this.scene.start('StartScreen');
         });
-        exit_to_main_button.on('pointerover', function(pointer) {
-            this.setScale(2.9);
-        });
-        exit_to_main_button.on('pointerout', function (pointer) {
-            this.setScale(3);
-        });
+        exit_to_main_button.on('pointerover', function(pointer) { this.setScale(2.9); });
+        exit_to_main_button.on('pointerout', function (pointer) { this.setScale(3); });
 
         // Mobile Play Toggle
         mobile_play_toggle.on('pointerdown', () => {
@@ -406,7 +376,6 @@ class LevelEnd extends Phaser.Scene {
     preload() {
         this.load.audio('stinger', [ 'assets/sounds/stinger.mp3' ]);
         this.load.audio('upgrade', [ 'assets/sounds/upgrade.mp3' ]);
-
         this.load.image('level-end-board', 'assets/level_end/level_end_board.PNG');
         this.load.image('boots', speedUpgrade.sprite);
         this.load.image('luck', luckUpgrade.sprite);
@@ -475,7 +444,7 @@ class LevelEnd extends Phaser.Scene {
             i++;
         }, 500);
 
-        if (excessApples > 5) { // AMAZING
+        if (excessApples >= 8) { // AMAZING
             this.physics.add.staticSprite(288, 180, 'amazing-text').setScale(3).anims.play('amazing-text');
             this.physics.add.staticSprite(400, 290,'dance').setScale(5).anims.play('grandma-dance');
         }
@@ -507,12 +476,11 @@ class LevelEnd extends Phaser.Scene {
                 currUpgrade.priceText.setText(currUpgrade.priceText.text + "*");
             }
 
-            // If player cannot afford upgrade
+            // If player cannot afford upgrade, set price color to red
             if (excessApples < currUpgrade.price) {
                 currUpgrade.priceText.setColor("#a00");
             }
             else {
-                
                 // Purchased upgrades update their respective variables
                 currUpgrade.icon.on('pointerdown', function (pointer) {
                     game.sound.play("upgrade");
@@ -546,7 +514,6 @@ class LevelEnd extends Phaser.Scene {
 
     update() {
         this.input.keyboard.on('keydown-ENTER', () => {
-            
             if (this.counter == 0) {
                 this.counter++;
                 this.scene.stop();
@@ -645,12 +612,8 @@ class GameOver extends Phaser.Scene {
             initializeGame();
             this.scene.start('GamePlay');  
         });
-        restart_button.on('pointerover', function(pointer) {
-            this.setScale(2.4);
-        });
-        restart_button.on('pointerout', function (pointer) {
-            this.setScale(2.5);
-        });
+        restart_button.on('pointerover', function(pointer) { this.setScale(2.4); });
+        restart_button.on('pointerout', function (pointer) { this.setScale(2.5); });
 
         // Exit To Main Button function
         exit_to_main_button.on('pointerdown', () => {
@@ -658,12 +621,8 @@ class GameOver extends Phaser.Scene {
             this.scene.stop();
             this.scene.start('StartScreen');
         });
-        exit_to_main_button.on('pointerover', function(pointer) {
-            this.setScale(2.4);
-        });
-        exit_to_main_button.on('pointerout', function (pointer) {
-            this.setScale(2.5);
-        });
+        exit_to_main_button.on('pointerover', function(pointer) { this.setScale(2.4); });
+        exit_to_main_button.on('pointerout', function (pointer) { this.setScale(2.5); });
     }
 }
 
@@ -714,7 +673,6 @@ class GamePlay extends Phaser.Scene {
         this.load.audio('monkey-laugh', [ 'assets/sounds/monkey_laugh.mp3'] );
         this.load.audio('banana-deflect', [ 'assets/sounds/banana_deflect.mp3'] );
         this.load.audio('banana-hit', [ 'assets/sounds/banana_hit.mp3'] );
-
         this.load.image('mush', 'assets/mush.PNG');
         this.load.image('golden-apple', 'assets/golden_apple.PNG');
         this.load.image('golden-mush', 'assets/golden_mush.PNG');
@@ -759,7 +717,7 @@ class GamePlay extends Phaser.Scene {
 
         this.initialTime = timelimit;
         countdownText = this.add.text(300, 16, 
-            'TIME LEFT: ' + formatTime(this.initialTime),
+            'TIME LEFT: ' + `${this.initialTime.toString()}`,
             colorful_text_style
         );
         timedEvent = this.time.addEvent({ delay: 1000, callback: onEvent, callbackScope: this, loop: true });
@@ -767,9 +725,7 @@ class GamePlay extends Phaser.Scene {
         // Player creation & animations
         var playerSprite = 'playerB' + basketUpgrade.degree;
         player = this.physics.add.sprite(288, 500, playerSprite);
-        player.setCollideWorldBounds(true)
-                .setBounce(0.2)
-                .setScale(4);
+        player.setCollideWorldBounds(true).setBounce(0.2).setScale(4);
         player.body.setGravityY(1000);
         if (basketUpgrade.degree >= 2) {
             basketUpgrade.effect = 2;
@@ -886,9 +842,6 @@ class GamePlay extends Phaser.Scene {
             if (cursors.up.isDown && player.body.blocked.down) {
                 player.setVelocityY(-600);
             }
-            if (cursors.down.isDown) {
-                player.setVelocityY(400);
-            }
 
             // Mobile Play
             if (mobilePlayOn) {
@@ -933,6 +886,11 @@ class GamePlay extends Phaser.Scene {
     }
 }
 
+/** 
+ * Creates player animations based on how many basket upgrades have been made
+ * @param {Phaser.Scene} s       : The current scene
+ * @param {String} playerSprite  : The spritesheet to use for animations
+ */
 function makePlayerAnimations(s, playerSprite) {
     // If a basket purchase has been made, OR previous player sprite is different than current,
     // remove all current player animations
@@ -1021,7 +979,8 @@ function animateMonkey(monkey) {
     monkey.anims.play('appear');
     var bananaInterval = Phaser.Math.Between(1000,4000);    // Interval before throwing banana
    
-    timeouts.push(setTimeout( () => {    // Throws banana
+    // Throws banana
+    timeouts.push(setTimeout( () => {
         monkey.anims.play('toss').once('animationcomplete', () => {
             var banana = bananas.create(monkey.x+40, monkey.y-100, 'banana').setScale(3);
             banana.setVelocityX(player.x - banana.x);
@@ -1029,12 +988,14 @@ function animateMonkey(monkey) {
         }); 
     }, bananaInterval));
 
-    timeouts.push(setTimeout( () => {   // Giggle
+    // Giggle
+    timeouts.push(setTimeout( () => {   
         monkey.anims.play('giggle');
         game.sound.play("monkey-laugh");
     }, bananaInterval + 1000));
 
-    timeouts.push(setTimeout( () => {   // Disappear
+    // Disappear
+    timeouts.push(setTimeout( () => {   
         monkey.anims.playReverse('appear').once('animationcomplete', () => {
             monkey.visible = false;
         });
@@ -1127,15 +1088,6 @@ function turnAppleToMush(apple) {
 }
 
 /**
- * Formats the number of seconds left into a string.
- * @param {Number} seconds : Number of seconds that have passed.
- * @returns String of time in minutes:seconds format.
- */
-function formatTime(seconds) {
-    return `${seconds.toString()}`;
-}
-
-/**
  * Pauses the game timer, and any current intervals.
  */
 function stopTimer() {
@@ -1152,7 +1104,7 @@ function stopTimer() {
  */
 function onEvent() {
     this.initialTime--;
-    countdownText.setText('TIME LEFT: ' + formatTime(this.initialTime));
+    countdownText.setText('TIME LEFT: ' + `${this.initialTime.toString()}`);
 }
 
 // Text styles
