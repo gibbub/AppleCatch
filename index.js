@@ -75,7 +75,10 @@ function initializeGame() {
  * Updates certain variables based on current level and any upgrades.
  */
 function setUpNextLevel() {
-    score = excessApples;
+    if (continueAfterLevelWin || continueAfterUpgradeWin) {
+        score = 0;
+    }
+    else score = excessApples;
     excessApples = 0;
     level++;
 
@@ -547,17 +550,17 @@ class LevelEnd extends Phaser.Scene {
 
         if (speedUpgrade.degree == speedUpgrade.max) {
             speedUpgrade.priceText.setColor("#a00");
-            speedUpgrade.priceText.setText("MAX*****");
+            speedUpgrade.priceText.setText("MAX");
             speedUpgrade.icon.setScale(4).disableInteractive();
         }
         if (luckUpgrade.degree == luckUpgrade.max) {
             luckUpgrade.priceText.setColor("#a00");
-            luckUpgrade.priceText.setText("MAX****");
+            luckUpgrade.priceText.setText("MAX");
             luckUpgrade.icon.setScale(4).disableInteractive();
         }
         if (basketUpgrade.degree == basketUpgrade.max) {
             basketUpgrade.priceText.setColor("#a00");
-            basketUpgrade.priceText.setText("MAX**");
+            basketUpgrade.priceText.setText("MAX");
             basketUpgrade.icon.setScale(4).disableInteractive();
         }
         
@@ -697,10 +700,11 @@ class GameWin extends Phaser.Scene {
 
         var stats_button = this.add.image(85, 615, 'stats-button').setScale(3).setInteractive();
         var continue_button = this.add.image(255, 615, 'continue-button').setScale(3).setInteractive();
-        var exit_to_main_button = this.add.image(190, 725, 'exit-to-main-button').setScale(3).setInteractive();
+        var exit_to_main_button = this.add.image(190, 735, 'exit-to-main-button').setScale(3).setInteractive();
 
         // Stats Button function
         stats_button.on('pointerdown', () => {
+            this.sound.play("select");
             if (!statsBoard.visible) {
                 statsBoard.setVisible(true);
                 statsText.setVisible(true);
@@ -714,22 +718,38 @@ class GameWin extends Phaser.Scene {
         stats_button.on('pointerout', function (pointer) { this.setScale(3); });
 
         // Continue Button function
-        continue_button.on('pointerdown', () => {
-            excessApples = score - applesNeeded;
-            
+        var warning = this.add.text(380, 600, 
+            "Warning: If you continue, your excess apples will no longer carry over to the next level",
+            { fontFamily: '"Press Start"',
+            fontSize: '11px',
+            color: '#fff000',
+            stroke: '#000000',
+            strokeThickness: 8,
+            align: 'left',
+            wordWrap: { width: 175 }
+        }).setVisible(false);
+        if (mobilePlayOn) warning.setVisible(true);
+
+        continue_button.on('pointerdown', () => {    
+            this.sound.play("select");        
             if (winType == "level") {
                 continueAfterLevelWin = true;
             }
             if (winType == "upgrade") {
                 continueAfterUpgradeWin = true;
             }
-            this.sound.play("select");
             setUpNextLevel();
             this.scene.stop();
             this.scene.start('GamePlay');
         });
-        continue_button.on('pointerover', function(pointer) { this.setScale(2.9); });
-        continue_button.on('pointerout', function (pointer) { this.setScale(3); });
+        continue_button.on('pointerover', function(pointer) { 
+            this.setScale(2.9); 
+            warning.setVisible(true);
+        });
+        continue_button.on('pointerout', function (pointer) { 
+            this.setScale(3);
+            if (!mobilePlayOn) warning.setVisible(false); 
+        });
 
         // Exit To Main Button function
         exit_to_main_button.on('pointerdown', () => {
@@ -739,8 +759,8 @@ class GameWin extends Phaser.Scene {
         });
         exit_to_main_button.on('pointerover', function(pointer) { this.setScale(2.9); });
         exit_to_main_button.on('pointerout', function (pointer) { this.setScale(3); });
-
     }
+    
 }
 
 /**
