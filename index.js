@@ -218,7 +218,7 @@ class HowToPlay extends Phaser.Scene {
 
     preload() {
         this.load.image('how-to-title', 'assets/start_screen/how_to_button.PNG');
-        this.load.image('how-to-play', 'assets/start_screen/how_to_play.png');
+        this.load.image('how-to-play', 'assets/start_screen/how_to_play.PNG');
         this.load.image('exit-button', 'assets/exit_button.PNG');
     }
 
