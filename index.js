@@ -32,7 +32,7 @@ var basketUpgrade;
 // Time-related vars
 var gamePaused = false;
 var timeSinceHitByBanana = 100;
-var timelimit = 5;
+var timelimit = 30;
 var countdownText;
 var timedEvent;
 var appleIntervalID, monkeyIntervalID;
@@ -66,8 +66,8 @@ function initializeGame() {
     };
     
     // Initialize upgrades
-    speedUpgrade = new Upgrade("speed", 8, 0, 200, 5, "assets/level_end/boots.PNG");
-    luckUpgrade = new Upgrade("luck", 10, 0, 1, 4, "assets/level_end/luck.PNG");
+    speedUpgrade = new Upgrade("speed", 5, 0, 200, 5, "assets/level_end/boots.PNG");
+    luckUpgrade = new Upgrade("luck", 7, 0, 1, 4, "assets/level_end/luck.PNG");
     basketUpgrade = new Upgrade("basket", 12, 0, 0, 2, "assets/level_end/basket.PNG");
 }
 
@@ -448,7 +448,7 @@ class LevelEnd extends Phaser.Scene {
         var i = 0;
         setInterval(() => {
             if (i < levelEndText.length) {
-                this.add.text(75, 250 + i*30, levelEndText[i], board_text_style);
+                this.add.text(75, 250 + i*30, levelEndText[i], board_text_style).setDepth(10);
             } else return;
             i++;
         }, 500);
@@ -495,7 +495,7 @@ class LevelEnd extends Phaser.Scene {
                     game.sound.play("upgrade");
                     excessApples = excessApples - currUpgrade.price;
                     currUpgrade.applyUpgradeToGame();
-                    currUpgrade.price = currUpgrade.price + 8;
+                    currUpgrade.price = currUpgrade.price + Math.floor(currUpgrade.price/2);
                     currUpgrade.priceText.setText(currUpgrade.price);
 
                     for (var i=0; i < currUpgrade.degree; i++) {
@@ -713,8 +713,6 @@ class GameWin extends Phaser.Scene {
         // Keep Playing Button function
         keep_playing_button.on('pointerdown', () => {
             excessApples = score - applesNeeded;
-            console.log(excessApples);
-            console.log(score);
             
             if (winType == "level") {
                 continueAfterLevelWin = true;
