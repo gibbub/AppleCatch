@@ -4,11 +4,18 @@ import Upgrade from "./Upgrade.js";
 var player;
 var apples, bananas;
 var monkey_right, monkey_left;
-var stats;
+var stats = {
+    totalApples: 0,
+    goldenApples: 0,
+    upgradesPurchased: 0,
+    bananaHits: 0
+};
 var score = 0;
 var excessApples = 0;
 var scoreText, excessAppleText;
 var cursors;
+var continueAfterLevelWin = false;
+var continueAfterUpgradeWin = false;
 
 // Vars that change with each level
 var level = 1;
@@ -25,7 +32,7 @@ var basketUpgrade;
 // Time-related vars
 var gamePaused = false;
 var timeSinceHitByBanana = 100;
-var timelimit = 30;
+var timelimit = 5;
 var countdownText;
 var timedEvent;
 var appleIntervalID, monkeyIntervalID;
@@ -48,6 +55,8 @@ function initializeGame() {
     appleGravityY = 0;
     monkeySpawnInterval = 31000;
     gamePaused = false;
+    continueAfterLevelWin = false;
+    continueAfterUpgradeWin = false;
 
     stats = {
         totalApples: 0,
@@ -57,9 +66,9 @@ function initializeGame() {
     };
     
     // Initialize upgrades
-    speedUpgrade = new Upgrade("speed", 8, 0, 200, "assets/level_end/boots.PNG");
-    luckUpgrade = new Upgrade("luck", 10, 0, 1, "assets/level_end/luck.PNG");
-    basketUpgrade = new Upgrade("basket", 12, 0, 0, "assets/level_end/basket.PNG");
+    speedUpgrade = new Upgrade("speed", 8, 0, 200, 5, "assets/level_end/boots.PNG");
+    luckUpgrade = new Upgrade("luck", 10, 0, 1, 4, "assets/level_end/luck.PNG");
+    basketUpgrade = new Upgrade("basket", 12, 0, 0, 2, "assets/level_end/basket.PNG");
 }
 
 /**
@@ -271,7 +280,7 @@ class PauseGame extends Phaser.Scene {
 
     preload() {
         this.load.image('board', 'assets/blank_board.PNG');
-        this.load.image('exit-to-main', 'assets/exit_to_main_button.PNG');
+        this.load.image('exit-to-main-button', 'assets/exit_to_main_button.PNG');
         this.load.image('exit', 'assets/exit_button.PNG');
     }
 
@@ -279,7 +288,7 @@ class PauseGame extends Phaser.Scene {
         this.add.image(288, 400, 'board').setScale(4);
         var exit_button = this.add.image(90, 185, 'exit').setScale(3).setInteractive();
         var how_to_button = this.add.image(288, 315, 'how-to-button').setScale(3).setInteractive();
-        var exit_to_main_button = this.add.image(288, 475, 'exit-to-main').setScale(3).setInteractive();
+        var exit_to_main_button = this.add.image(288, 475, 'exit-to-main-button').setScale(3).setInteractive();
         var mobile_play_toggle = this.add.sprite(260, 625, 'mobile-play-toggle').setScale(3).setInteractive();
         var sound_toggle = this.add.sprite(385, 625, 'sound-toggle').setScale(3).setInteractive();
 
@@ -531,13 +540,27 @@ class LevelEnd extends Phaser.Scene {
             luckUpgrade.priceText.setColor("#a00");
             luckUpgrade.icon.setScale(4).disableInteractive();
         }
-        if (excessApples < basketUpgrade.price || basketUpgrade.degree >= 2) {
+        if (excessApples < basketUpgrade.price) {
             basketUpgrade.priceText.setColor("#a00");
             basketUpgrade.icon.setScale(4).disableInteractive();
         }
-        if (basketUpgrade.degree >= 2) {
-            basketUpgrade.priceText.setText("MAX**");
+
+        if (speedUpgrade.degree == speedUpgrade.max) {
+            speedUpgrade.priceText.setColor("#a00");
+            speedUpgrade.priceText.setText("MAX*****");
+            speedUpgrade.icon.setScale(4).disableInteractive();
         }
+        if (luckUpgrade.degree == luckUpgrade.max) {
+            luckUpgrade.priceText.setColor("#a00");
+            luckUpgrade.priceText.setText("MAX****");
+            luckUpgrade.icon.setScale(4).disableInteractive();
+        }
+        if (basketUpgrade.degree == basketUpgrade.max) {
+            basketUpgrade.priceText.setColor("#a00");
+            basketUpgrade.priceText.setText("MAX**");
+            basketUpgrade.icon.setScale(4).disableInteractive();
+        }
+        
         excessAppleText.setText(excessApples);
     }
 }
@@ -623,6 +646,99 @@ class GameOver extends Phaser.Scene {
         });
         exit_to_main_button.on('pointerover', function(pointer) { this.setScale(2.4); });
         exit_to_main_button.on('pointerout', function (pointer) { this.setScale(2.5); });
+    }
+}
+
+class GameWin extends Phaser.Scene {
+
+    constructor () {
+        super('GameWin');
+    }
+
+    preload() {
+        this.load.image('level-win', 'assets/level_end/level_win.png');
+        this.load.image('upgrade-win', 'assets/level_end/upgrade_win.png');
+        this.load.image('board', 'assets/blank_board.PNG');
+        this.load.image('exit-to-main-button', 'assets/exit_to_main_button.PNG');
+        this.load.image('stats-button', 'assets/level_end/next_level_button.PNG');
+        this.load.image('keep-playing-button', 'assets/level_end/next_level_button.PNG');
+    }
+
+    create() {
+        var winMessage = "";
+        var winType = "";
+        if (level == 30 && !continueAfterLevelWin) {
+            winType = "level";
+            this.add.image(288, 416, 'level-win');
+            winMessage = "YOU WIN!"
+            + "\nYou played for a while! Grandma's apple pies have never tasted better.";
+        }
+        else if (!continueAfterUpgradeWin){
+            winType = "upgrade";
+            this.add.image(288, 416, 'upgrade-win');
+            winMessage = "YOU WIN!"
+            + "\nAll upgrades purchased.";
+        }
+        var txt = this.add.text(290, 450, winMessage, colorful_text_style).setOrigin(0.5);
+        this.add.rectangle(txt.x, txt.y, 600, txt.height+20, 0x04577b, 0.8).setOrigin(0.5);
+        txt.depth = 10;
+
+        var statsBoard = this.add.image(288, 200, 'board').setScale(4).setVisible(false);
+        var statsList =
+        "Level reached: " + `${level}` +
+        "\n\nTotal apples caught: " + `${stats.totalApples}` +
+        "\n\nGolden apples caught: " + `${stats.goldenApples}` +
+        "\n\nUpgrades purchased: " + `${stats.upgradesPurchased}` +
+        "\n\nBananas that hit: " + `${stats.bananaHits}`;
+        var statsText = this.add.text(80, 100, statsList, board_text_style).setVisible(false);
+
+        var stats_button = this.add.image(115, 615, 'stats-button').setScale(3).setInteractive();
+        var keep_playing_button = this.add.image(315, 615, 'keep-playing-button').setScale(3).setInteractive();
+        var exit_to_main_button = this.add.image(190, 725, 'exit-to-main-button').setScale(3).setInteractive();
+
+        // Stats Button function
+        stats_button.on('pointerdown', () => {
+            if (!statsBoard.visible) {
+                statsBoard.setVisible(true);
+                statsText.setVisible(true);
+            }
+            else {
+                statsBoard.setVisible(false);
+                statsText.setVisible(false);
+            }
+        });
+        stats_button.on('pointerover', function(pointer) { this.setScale(2.9); });
+        stats_button.on('pointerout', function (pointer) { this.setScale(3); });
+
+        // Keep Playing Button function
+        keep_playing_button.on('pointerdown', () => {
+            excessApples = score - applesNeeded;
+            console.log(excessApples);
+            console.log(score);
+            
+            if (winType == "level") {
+                continueAfterLevelWin = true;
+            }
+            if (winType == "upgrade") {
+                continueAfterUpgradeWin = true;
+            }
+            this.sound.play("select");
+            setUpNextLevel();
+            this.scene.stop();
+            this.scene.start('GamePlay');
+        });
+        keep_playing_button.on('pointerover', function(pointer) { this.setScale(2.9); });
+        keep_playing_button.on('pointerout', function (pointer) { this.setScale(3); });
+
+        // Exit To Main Button function
+        exit_to_main_button.on('pointerdown', () => {
+            this.sound.play("select");
+            this.scene.stop();
+            this.scene.start('StartScreen');
+        });
+        exit_to_main_button.on('pointerover', function(pointer) { this.setScale(2.9); });
+        exit_to_main_button.on('pointerout', function (pointer) { this.setScale(3); });
+
     }
 }
 
@@ -797,10 +913,15 @@ class GamePlay extends Phaser.Scene {
         // Time
         if (this.initialTime === 0) {
             stopTimer();
+            // GAME OVER
             if (score < applesNeeded) {
                 this.scene.stop();
                 game.scene.start('GameOver')
-            }
+            } // GAME WIN
+            else if ((level >= 30 && !continueAfterLevelWin) || (stats.upgradesPurchased >= 11 && !continueAfterUpgradeWin)) {
+                this.scene.stop();
+                game.scene.start('GameWin');
+            } // END LEVEL
             else {
                 this.scene.pause();
                 game.scene.start('LevelEnd');
@@ -1123,13 +1244,15 @@ var colorful_text_style = {
     fill: '#fe3',
     stroke: '#f54',
     strokeThickness: 3,
+    align: 'center',
     shadow: {
         offsetX: 2,
         offsetY: 2,
         color: '#f0e',
         blur: 5,
         fill: true
-    }
+    },
+    wordWrap: { width: 512 }
 };
 var board_text_style = {
     fontFamily: '"Press Start"',
@@ -1159,6 +1282,6 @@ var config = {
             debug: false
         }
     },
-    scene: [StartScreen, HowToPlay, GamePlay, LevelEnd, GameOver, PauseGame]
+    scene: [StartScreen, HowToPlay, GamePlay, LevelEnd, GameOver, GameWin, PauseGame]
 };
 var game = new Phaser.Game(config);
