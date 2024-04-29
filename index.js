@@ -656,15 +656,18 @@ class GameWin extends Phaser.Scene {
     }
 
     preload() {
+        this.load.audio('gamewin', [ 'assets/sounds/gamewin.mp3' ]);
         this.load.image('level-win', 'assets/level_end/level_win.png');
         this.load.image('upgrade-win', 'assets/level_end/upgrade_win.png');
         this.load.image('board', 'assets/blank_board.PNG');
         this.load.image('exit-to-main-button', 'assets/exit_to_main_button.PNG');
-        this.load.image('stats-button', 'assets/level_end/next_level_button.PNG');
-        this.load.image('keep-playing-button', 'assets/level_end/next_level_button.PNG');
+        this.load.image('stats-button', 'assets/level_end/stats_button.png');
+        this.load.image('continue-button', 'assets/level_end/continue_button.png');
     }
 
     create() {
+        this.sound.play("gamewin");
+
         var winMessage = "";
         var winType = "";
         if (level == 30 && !continueAfterLevelWin) {
@@ -692,8 +695,8 @@ class GameWin extends Phaser.Scene {
         "\n\nBananas that hit: " + `${stats.bananaHits}`;
         var statsText = this.add.text(80, 100, statsList, board_text_style).setVisible(false);
 
-        var stats_button = this.add.image(115, 615, 'stats-button').setScale(3).setInteractive();
-        var keep_playing_button = this.add.image(315, 615, 'keep-playing-button').setScale(3).setInteractive();
+        var stats_button = this.add.image(85, 615, 'stats-button').setScale(3).setInteractive();
+        var continue_button = this.add.image(255, 615, 'continue-button').setScale(3).setInteractive();
         var exit_to_main_button = this.add.image(190, 725, 'exit-to-main-button').setScale(3).setInteractive();
 
         // Stats Button function
@@ -710,8 +713,8 @@ class GameWin extends Phaser.Scene {
         stats_button.on('pointerover', function(pointer) { this.setScale(2.9); });
         stats_button.on('pointerout', function (pointer) { this.setScale(3); });
 
-        // Keep Playing Button function
-        keep_playing_button.on('pointerdown', () => {
+        // Continue Button function
+        continue_button.on('pointerdown', () => {
             excessApples = score - applesNeeded;
             
             if (winType == "level") {
@@ -725,8 +728,8 @@ class GameWin extends Phaser.Scene {
             this.scene.stop();
             this.scene.start('GamePlay');
         });
-        keep_playing_button.on('pointerover', function(pointer) { this.setScale(2.9); });
-        keep_playing_button.on('pointerout', function (pointer) { this.setScale(3); });
+        continue_button.on('pointerover', function(pointer) { this.setScale(2.9); });
+        continue_button.on('pointerout', function (pointer) { this.setScale(3); });
 
         // Exit To Main Button function
         exit_to_main_button.on('pointerdown', () => {
