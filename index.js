@@ -898,9 +898,9 @@ class GamePlay extends Phaser.Scene {
         cursors = this.input.keyboard.createCursorKeys();
 
         // Mobile Play
-        jump_button = this.add.image(158, 750, 'jump').setScale(4).setInteractive();
-        left_button = this.add.image(288, 750, 'left').setScale(4).setInteractive();
-        right_button = this.add.image(418, 750, 'right').setScale(4).setInteractive();
+        jump_button = this.add.image(288, 750, 'jump').setScale(4).setInteractive();
+        left_button = this.add.image(150, 750, 'left').setScale(4).setAlpha(0.7).setInteractive();
+        right_button = this.add.image(426, 750, 'right').setScale(4).setAlpha(0.7).setInteractive();
         var pause_button = this.add.image(40, 790, 'pause').setScale(3).setInteractive();
 
         pause_button.on('pointerdown', () => {
@@ -972,18 +972,14 @@ class GamePlay extends Phaser.Scene {
                 jump_button.visible = true;
 
                 var pointer = game.input.activePointer;
-                if (pointer.isDown) {
-                    // There is definitely a better/proper way to handle this... But this works for now. Ish.
-    
+                if (pointer.isDown) {    
                     // Move left
-                    if ((pointer.downX > left_button.x-32 && pointer.downX < left_button.x+32)
-                    && (pointer.downY > left_button.y-32 && pointer.downY < left_button.y+32)) {
+                    if (pointer.downX < 280) {
                         player.setVelocityX(-speedUpgrade.effect * speedPenalty);
                         player.anims.play('left', true);
                     }
                     // Move right
-                    else if ((pointer.downX > right_button.x-32 && pointer.downX < right_button.x+32)
-                    && (pointer.downY > right_button.y-32 && pointer.downY < right_button.y+32)) {
+                    else if (pointer.downX > 296) {
                         player.setVelocityX(speedUpgrade.effect * speedPenalty);
                         player.anims.play('right', true);
                     }
