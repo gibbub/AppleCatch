@@ -3,6 +3,7 @@ import Upgrade from "./Upgrade.js";
 // Game play vars
 var player;
 var apples, bananas;
+var applesToRecycle = [];
 var monkey_right, monkey_left;
 var stats = {
     totalApples: 0,
@@ -662,8 +663,8 @@ class GameWin extends Phaser.Scene {
         // this.load.audio('gamewin', [ 'assets/sounds/gamewin.mp3' ]);
         this.load.image('level-win', 'assets/level_end/level_win.png');
         this.load.image('upgrade-win', 'assets/level_end/upgrade_win.png');
-        this.load.image('board', 'assets/blank_board.PNG');
-        this.load.image('exit-to-main-button', 'assets/exit_to_main_button.PNG');
+        //this.load.image('board', 'assets/blank_board.PNG');
+        //this.load.image('exit-to-main-button', 'assets/exit_to_main_button.PNG');
         this.load.image('stats-button', 'assets/level_end/stats_button.png');
         this.load.image('continue-button', 'assets/level_end/continue_button.png');
     }
@@ -909,6 +910,7 @@ class GamePlay extends Phaser.Scene {
 
         // Apples & bananas
         apples = this.physics.add.group();
+        applesToRecycle = [];
         appleIntervalID = setInterval(spawnApple, appleSpawnInterval);
         bananas = this.physics.add.group();
         
@@ -1086,7 +1088,17 @@ function spawnApple() {
             apple.name = "golden";
         }
         else {
-            apple = apples.create(xCoord, yCoord, 'apple').setScale(3);
+            // Recycles apple objects which have already been caught in order to save memoru & reduce lag
+            if (applesToRecycle.length >= 1) {
+                apple = applesToRecycle.pop();
+                apple.setTexture('apple');
+                apple.setPosition(xCoord, yCoord);
+                apple.setActive(true).setVisible(true);
+                apple.body.enable = true;
+            }
+            else {
+                apple = apples.create(xCoord, yCoord, 'apple').setScale(3);
+            }
         }
         apple.setBounce(0.1)
             .setVelocityY(Phaser.Math.Between(-50, 0))
@@ -1204,13 +1216,18 @@ function processAppleCollision(player, apple) {
  * @param {*} apple : The apple to collect.
  */
 function collectApple(apple) {
-    apple.destroy();
     if (apple.name == "golden") {
+        apple.destroy();
         game.sound.play("golden-collect");
         score = score + 2;
         stats.goldenApples++;
     }
-    else { game.sound.play("collect"); }
+    else { 
+        //apple.setVisible(false).setActive(false);
+        apple.disableBody(true, true);
+        applesToRecycle.push(apple)
+        game.sound.play("collect"); 
+    }
     score++;
     scoreText.setText('SCORE: ' + score + '/' + applesNeeded);
     stats.totalApples++;
