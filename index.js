@@ -36,7 +36,7 @@ var timeSinceHitByBanana = 100;
 var timelimit = 30;
 var countdownText;
 var timedEvent;
-var appleIntervalID, monkeyIntervalID;
+var appleIntervalID, monkeyIntervalID, levelEndIntervalID;
 var timeouts = [];
 
 // Mobile Play & Sound
@@ -76,7 +76,7 @@ function initializeGame() {
  * Updates certain variables based on current level and any upgrades.
  */
 function setUpNextLevel() {
-    if (continueAfterLevelWin || continueAfterUpgradeWin) {
+    if (continueAfterUpgradeWin) {
         score = 0;
     }
     else score = excessApples;
@@ -450,7 +450,7 @@ class LevelEnd extends Phaser.Scene {
             ">EXCESS: " + excessApples
         ]
         var i = 0;
-        setInterval(() => {
+        levelEndIntervalID = setInterval(() => {
             if (i < levelEndText.length) {
                 this.add.text(75, 250 + i*30, levelEndText[i], board_text_style).setDepth(10);
             } else return;
@@ -514,6 +514,7 @@ class LevelEnd extends Phaser.Scene {
 
         // Next Level Button function
         next_button.on('pointerdown', () => {
+            clearInterval(levelEndIntervalID);
             this.sound.play("select");
             setUpNextLevel();
             this.scene.stop();
@@ -529,6 +530,7 @@ class LevelEnd extends Phaser.Scene {
         this.input.keyboard.on('keydown-ENTER', () => {
             if (this.counter == 0) {
                 this.counter++;
+                clearInterval(levelEndIntervalID);
                 this.scene.stop();
                 setUpNextLevel();
                 this.scene.start('GamePlay');
@@ -663,8 +665,8 @@ class GameWin extends Phaser.Scene {
         // this.load.audio('gamewin', [ 'assets/sounds/gamewin.mp3' ]);
         this.load.image('level-win', 'assets/level_end/level_win.png');
         this.load.image('upgrade-win', 'assets/level_end/upgrade_win.png');
-        //this.load.image('board', 'assets/blank_board.PNG');
-        //this.load.image('exit-to-main-button', 'assets/exit_to_main_button.PNG');
+        this.load.image('board', 'assets/blank_board.PNG');
+        this.load.image('exit-to-main-button', 'assets/exit_to_main_button.PNG');
         this.load.image('stats-button', 'assets/level_end/stats_button.png');
         this.load.image('continue-button', 'assets/level_end/continue_button.png');
     }
@@ -675,6 +677,7 @@ class GameWin extends Phaser.Scene {
         var winMessage = "";
         var winType = "";
         if (level == 30 && !continueAfterLevelWin) {
+            excessApples = score - applesNeeded;
             winType = "level";
             this.add.image(288, 416, 'level-win');
             winMessage = "YOU WIN!"
@@ -729,7 +732,7 @@ class GameWin extends Phaser.Scene {
             align: 'left',
             wordWrap: { width: 175 }
         }).setVisible(false);
-        if (mobilePlayOn) warning.setVisible(true);
+        if (mobilePlayOn && winType == "upgrade") warning.setVisible(true);
 
         continue_button.on('pointerdown', () => {    
             this.sound.play("select");        
@@ -745,7 +748,7 @@ class GameWin extends Phaser.Scene {
         });
         continue_button.on('pointerover', function(pointer) { 
             this.setScale(2.9); 
-            warning.setVisible(true);
+            if (winType == "upgrade") warning.setVisible(true);
         });
         continue_button.on('pointerout', function (pointer) { 
             this.setScale(3);
@@ -1088,7 +1091,7 @@ function spawnApple() {
             apple.name = "golden";
         }
         else {
-            // Recycles apple objects which have already been caught in order to save memoru & reduce lag
+            // Recycles apple objects which have already been caught in order to save memory & reduce lag
             if (applesToRecycle.length >= 1) {
                 apple = applesToRecycle.pop();
                 apple.setTexture('apple');
