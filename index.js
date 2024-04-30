@@ -386,8 +386,8 @@ class LevelEnd extends Phaser.Scene {
     }
 
     preload() {
-        this.load.audio('stinger', [ 'assets/sounds/stinger.mp3' ]);
-        this.load.audio('upgrade', [ 'assets/sounds/upgrade.mp3' ]);
+        // this.load.audio('stinger', [ 'assets/sounds/stinger.mp3' ]);
+        // this.load.audio('upgrade', [ 'assets/sounds/upgrade.mp3' ]);
         this.load.image('level-end-board', 'assets/level_end/level_end_board.PNG');
         this.load.image('boots', speedUpgrade.sprite);
         this.load.image('luck', luckUpgrade.sprite);
@@ -578,7 +578,7 @@ class GameOver extends Phaser.Scene {
     }
 
     preload() {
-        this.load.audio('gameover', [ 'assets/sounds/gameover.mp3' ]);
+        // this.load.audio('gameover', [ 'assets/sounds/gameover.mp3' ]);
         this.load.image('gameover-board', 'assets/vert_blank_board.png');
         this.load.image('exit-to-main-button', 'assets/exit_to_main_button.PNG');
         this.load.image('restart-button', 'assets/start_screen/start_button.PNG');
@@ -659,7 +659,7 @@ class GameWin extends Phaser.Scene {
     }
 
     preload() {
-        this.load.audio('gamewin', [ 'assets/sounds/gamewin.mp3' ]);
+        // this.load.audio('gamewin', [ 'assets/sounds/gamewin.mp3' ]);
         this.load.image('level-win', 'assets/level_end/level_win.png');
         this.load.image('upgrade-win', 'assets/level_end/upgrade_win.png');
         this.load.image('board', 'assets/blank_board.PNG');
@@ -810,6 +810,11 @@ class GamePlay extends Phaser.Scene {
         this.load.audio('monkey-laugh', [ 'assets/sounds/monkey_laugh.mp3'] );
         this.load.audio('banana-deflect', [ 'assets/sounds/banana_deflect.mp3'] );
         this.load.audio('banana-hit', [ 'assets/sounds/banana_hit.mp3'] );
+        this.load.audio('stinger', [ 'assets/sounds/stinger.mp3' ]);
+        this.load.audio('upgrade', [ 'assets/sounds/upgrade.mp3' ]);
+        this.load.audio('gamewin', [ 'assets/sounds/gamewin.mp3' ]);
+        this.load.audio('gameover', [ 'assets/sounds/gameover.mp3' ]);
+
         this.load.image('mush', 'assets/mush.PNG');
         this.load.image('golden-apple', 'assets/golden_apple.PNG');
         this.load.image('golden-mush', 'assets/golden_mush.PNG');
@@ -1199,7 +1204,7 @@ function processAppleCollision(player, apple) {
  * @param {*} apple : The apple to collect.
  */
 function collectApple(apple) {
-    apple.disableBody(true, true);
+    apple.destroy();
     if (apple.name == "golden") {
         game.sound.play("golden-collect");
         score = score + 2;
