@@ -125,6 +125,11 @@ class StartScreen extends Phaser.Scene {
         var sound_toggle = this.add.sprite(385, 715, 'sound-toggle').setScale(3).setInteractive();
         this.add.text(95, 780, "Gabby Albrecht 2024", colorful_text_style);
 
+        // Check if player is on mobile device
+        if (!this.sys.game.device.os.desktop) {
+            mobilePlayOn = true;
+        }
+
         // Spawn apples when Game Title is clicked
         var startScreenApples = this.physics.add.group();
         game_title.on('pointerdown', () => {
