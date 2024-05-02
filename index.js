@@ -4,6 +4,7 @@ import Upgrade from "./Upgrade.js";
 var player;
 var apples, bananas;
 var applesToRecycle = [];
+var mushyApples = [];
 var monkey_right, monkey_center, monkey_left;
 var stats = {
     totalApples: 0,
@@ -83,7 +84,6 @@ function setUpNextLevel() {
     excessApples = 0;
     level++;
 
-    console.log(applesNeeded);
     applesNeeded = getApplesNeeded();
     var numApplesToSpawn = applesNeeded - Math.floor(level/5) + 6;
     appleSpawnInterval = 1000 * Phaser.Math.RoundTo(timelimit/numApplesToSpawn, -2);
@@ -930,13 +930,15 @@ class GamePlay extends Phaser.Scene {
         // Apples & bananas
         apples = this.physics.add.group();
         applesToRecycle = [];
+        mushyApples = this.physics.add.group();
         appleIntervalID = setInterval(spawnApple, appleSpawnInterval);
         bananas = this.physics.add.group();
         
         // Set colliders
         layer.setCollisionByExclusion([-1]);
         this.physics.add.collider(player, layer);
-        this.physics.add.collider(apples, layer);
+        this.physics.add.collider(apples, layer, turnAppleToMush, null, this);
+        this.physics.add.collider(mushyApples, layer);
         this.physics.add.overlap(player, apples, processAppleCollision, null, this);
         this.physics.add.overlap(player, bananas, bananaStrike, null, this);
 
@@ -1109,6 +1111,9 @@ function spawnApple() {
         }
         else {
             // Recycles apple objects which have already been caught in order to save memory & reduce lag
+            console.log("Total: "+apples.children.entries.length);
+            console.log("Recycle: "+applesToRecycle.length);
+            console.log("Mushy: "+mushyApples.children.entries.length);
             if (applesToRecycle.length >= 1) {
                 apple = applesToRecycle.pop();
                 apple.setTexture('apple');
@@ -1119,6 +1124,10 @@ function spawnApple() {
             else {
                 apple = apples.create(xCoord, yCoord, 'apple').setScale(3);
             }
+        }
+        // Removes mushy apples if there are too many to reduce lag
+        if (mushyApples.children.entries.length >= 15) {
+            mushyApples.children.entries.shift().destroy();
         }
         apple.setBounce(0.1)
             .setVelocityY(Phaser.Math.Between(-50, 0))
@@ -1147,17 +1156,6 @@ function spawnMonkey() {
                 }
             }); 
         }
-
-        // if (monkey_right.visible && !monkey_left.visible) {
-        //     monkeyToSpawn = monkey_left;
-        // }
-        // if (monkey_left.visible && !monkey_right.visible) {
-        //     monkeyToSpawn = monkey_right;            
-        // }
-        // if (!(monkey_left.visible && monkey_right.visible)) {
-        //     monkeyToSpawn.visible = true;
-        //     animateMonkey(monkeyToSpawn); 
-        // }
     }
 }
 
@@ -1239,11 +1237,8 @@ function bananaStrike(player, banana) {
  * @param {*} apple : The apple which has collided with the player.
  */
 function processAppleCollision(player, apple) {
-    if (apple.name != 'mush' && player.body.touching.up && (apple.getCenter().y < player.getCenter().y)) {
+    if (player.body.touching.up && (apple.getCenter().y < player.getCenter().y)) {
         collectApple(apple);
-    }
-    else if (apple.y > 675){    // If apple is below certain y value, player can no longer collect it.
-        turnAppleToMush(apple);        
     }
 }
 
@@ -1270,17 +1265,18 @@ function collectApple(apple) {
 }
 
 /**
- * Changes the texture of an apple to mush when it is stepped on by the player.
+ * Changes the texture of an apple to mush when it falls on the ground.
  * @param {*} apple : The apple to turn to mush.
  */
-function turnAppleToMush(apple) {
-    if (apple.name != "mush") {
-        if (apple.name == "golden") {
-            apple.setTexture('golden-mush');
-        }
-        else { apple.setTexture('mush'); }
-        apple.name = "mush";
+function turnAppleToMush(apple) {  
+    mushyApples.add(apple);
+    apple.setVelocityY(-40);
+    if (apple.name == "golden") {
+        apple.setTexture('golden-mush');
     }
+    else { apple.setTexture('mush'); }
+    setInterval(() => { apples.remove(apple); }, 10);
+    
 }
 
 /**
