@@ -933,7 +933,7 @@ class GamePlay extends Phaser.Scene {
         cursors = this.input.keyboard.createCursorKeys();
 
         // Mobile Play
-        jump_button = this.add.image(288, 750, 'jump').setScale(4).setInteractive();
+        jump_button = this.add.image(288, 750, 'jump').setScale(4.5).setInteractive();
         left_button = this.add.image(150, 750, 'left').setScale(4).setAlpha(0.7).setInteractive();
         right_button = this.add.image(426, 750, 'right').setScale(4).setAlpha(0.7).setInteractive();
         var pause_button = this.add.image(40, 790, 'pause').setScale(3).setInteractive();
@@ -1007,14 +1007,15 @@ class GamePlay extends Phaser.Scene {
                 jump_button.visible = true;
 
                 var pointer = game.input.activePointer;
+                
                 if (pointer.isDown) {    
                     // Move left
-                    if (pointer.downX < 280) {
+                    if (pointer.downX < 240) {
                         player.setVelocityX(-speedUpgrade.effect * speedPenalty);
                         player.anims.play('left', true);
                     }
                     // Move right
-                    else if (pointer.downX > 296) {
+                    else if (pointer.downX > 336) {
                         player.setVelocityX(speedUpgrade.effect * speedPenalty);
                         player.anims.play('right', true);
                     }
