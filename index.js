@@ -54,7 +54,7 @@ function initializeGame() {
     applesNeeded = 8;
     appleSpawnInterval = 2000;
     appleGravityY = 0;
-    monkeySpawnInterval = 31000;
+    monkeySpawnInterval = 100000;
     gamePaused = false;
     continueAfterLevelWin = false;
     continueAfterUpgradeWin = false;
@@ -83,13 +83,21 @@ function setUpNextLevel() {
     excessApples = 0;
     level++;
 
-    applesNeeded = 2*(level-1) + 2*(Math.floor(level/5)) + 8;
+    console.log(applesNeeded);
+    applesNeeded = getApplesNeeded();
     var numApplesToSpawn = applesNeeded - Math.floor(level/5) + 6;
     appleSpawnInterval = 1000 * Phaser.Math.RoundTo(timelimit/numApplesToSpawn, -2);
     appleGravityY = Math.floor(5*(level-1));
 
     var numMonkeysToSpawn = level == 2 ? 1 : Math.floor(level/3);
     monkeySpawnInterval = 1000 * Phaser.Math.RoundTo(timelimit/(numMonkeysToSpawn+1), -2);
+}
+
+/**
+ * @returns Number of apples needed for the next level
+ */
+function getApplesNeeded() {
+    return applesNeeded + Math.floor(level/5) + 2;
 }
 
 /**
@@ -452,14 +460,15 @@ class LevelEnd extends Phaser.Scene {
             "APPLES...",
             ">NEEDED: " + applesNeeded,
             ">CAUGHT: " + score,
-            ">EXCESS: " + excessApples
+            ">EXCESS: " + excessApples,
+            "\nNeeded Next:" + getApplesNeeded()
         ]
-        var i = 0;
+        var j = 0;
         levelEndIntervalID = setInterval(() => {
-            if (i < levelEndText.length) {
-                this.add.text(75, 250 + i*30, levelEndText[i], board_text_style).setDepth(10);
+            if (j < levelEndText.length) {
+                this.add.text(70, 250 + j*20, levelEndText[j], board_text_style).setDepth(100);
             } else return;
-            i++;
+            j++;
         }, 500);
 
         if (excessApples >= 8) { // AMAZING
@@ -1185,6 +1194,7 @@ function bananaStrike(player, banana) {
             makePlayerAnimations(this, 'playerB2-' + basketUpgrade.effect);
         }
         else {
+            banana.destroy();
             game.sound.play("banana-hit");
             timeSinceHitByBanana = 0;
             player.setVelocityX(-1*player.body.velocity.x);
