@@ -4,7 +4,7 @@ import Upgrade from "./Upgrade.js";
 var player;
 var apples, bananas;
 var applesToRecycle = [];
-var monkey_right, monkey_left;
+var monkey_right, monkey_center, monkey_left;
 var stats = {
     totalApples: 0,
     goldenApples: 0,
@@ -895,6 +895,8 @@ class GamePlay extends Phaser.Scene {
         // Monkeys
         monkey_right = this.physics.add.staticSprite(335, 340, 'monkey').setScale(4);
         monkey_right.visible = false;
+        monkey_center = this.physics.add.staticSprite(200, 420, 'monkey').setScale(4);
+        monkey_center.visible = false;
         monkey_left = this.physics.add.staticSprite(110, 260, 'monkey').setScale(4);
         monkey_left.visible = false;
 
@@ -1129,18 +1131,33 @@ function spawnApple() {
  * Spawns a monkey on either the left or right side of the tree.
  */
 function spawnMonkey() {
-    var monkeyToSpawn = Phaser.Math.Between(0, 1) == 0 ? monkey_right : monkey_left;
+    var monkeys = [monkey_right, monkey_center, monkey_left];
+    var monkeyToSpawn = monkeys[Phaser.Math.Between(0, 2)];
     if (!gamePaused) {
-        if (monkey_right.visible && !monkey_left.visible) {
-            monkeyToSpawn = monkey_left;
-        }
-        if (monkey_left.visible && !monkey_right.visible) {
-            monkeyToSpawn = monkey_right;            
-        }
-        if (!(monkey_left.visible && monkey_right.visible)) {
+        if (!monkeyToSpawn.visible) {
             monkeyToSpawn.visible = true;
-            animateMonkey(monkeyToSpawn); 
+            animateMonkey(monkeyToSpawn);
         }
+        else {
+            monkeys.forEach(monkey => {
+                if (!monkey.visible) {
+                    monkeyToSpawn = monkey;
+                    monkeyToSpawn.visible = true;
+                    animateMonkey(monkeyToSpawn);
+                }
+            }); 
+        }
+
+        // if (monkey_right.visible && !monkey_left.visible) {
+        //     monkeyToSpawn = monkey_left;
+        // }
+        // if (monkey_left.visible && !monkey_right.visible) {
+        //     monkeyToSpawn = monkey_right;            
+        // }
+        // if (!(monkey_left.visible && monkey_right.visible)) {
+        //     monkeyToSpawn.visible = true;
+        //     animateMonkey(monkeyToSpawn); 
+        // }
     }
 }
 
