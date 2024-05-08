@@ -34,7 +34,7 @@ var basketUpgrade;
 // Time-related vars
 var gamePaused = false;
 var timeSinceHitByBanana = 100;
-var timelimit = 30;
+var timeLimit = 30;
 var countdownText;
 var timedEvent;
 var appleIntervalID, monkeyIntervalID, levelEndIntervalID;
@@ -49,13 +49,13 @@ var gameplayMusic;
  * Sets up first level; all game vars are set to their defaults
  */
 function initializeGame() {
-    score = 0;
+    score = 100;
     excessApples = 0;
-    level = 1;
+    level = 15;
     applesNeeded = 8;
     appleSpawnInterval = 2000;
     appleGravityY = 0;
-    monkeySpawnInterval = 100000;
+    monkeySpawnInterval = 1000;
     gamePaused = false;
     continueAfterLevelWin = false;
     continueAfterUpgradeWin = false;
@@ -86,18 +86,18 @@ function setUpNextLevel() {
 
     applesNeeded = getApplesNeeded();
     var numApplesToSpawn = applesNeeded - Math.floor(level/5) + 6;
-    appleSpawnInterval = 1000 * Phaser.Math.RoundTo(timelimit/numApplesToSpawn, -2);
+    appleSpawnInterval = 1000 * Phaser.Math.RoundTo(timeLimit/numApplesToSpawn, -2);
     appleGravityY = Math.floor(5*(level-1));
 
-    var numMonkeysToSpawn = level == 2 ? 1 : Math.floor(level/3);
-    monkeySpawnInterval = 1000 * Phaser.Math.RoundTo(timelimit/(numMonkeysToSpawn+1), -2);
+    var numMonkeysToSpawn = level == 2 ? 1 : Math.floor(level/4);
+    monkeySpawnInterval = 1000 * Phaser.Math.RoundTo(timeLimit/(numMonkeysToSpawn+1), -2);
 }
 
 /**
  * @returns Number of apples needed for the next level
  */
 function getApplesNeeded() {
-    return applesNeeded + Math.floor(level/5) + 2;
+    return applesNeeded + Math.floor(level/7) + 2;
 }
 
 /**
@@ -469,7 +469,7 @@ class LevelEnd extends Phaser.Scene {
                 this.add.text(70, 250 + j*20, levelEndText[j], board_text_style).setDepth(100);
             } else return;
             j++;
-        }, 500);
+        }, 300);
 
         if (excessApples >= 8) { // AMAZING
             this.physics.add.staticSprite(288, 180, 'amazing-text').setScale(3).anims.play('amazing-text');
@@ -875,7 +875,7 @@ class GamePlay extends Phaser.Scene {
         scoreText = this.add.text(16, 16, 'SCORE: ' + score + '/' + applesNeeded, colorful_text_style);
         this.add.text(16, 45, 'Level ' + level, colorful_text_style);
 
-        this.initialTime = timelimit;
+        this.initialTime = timeLimit;
         countdownText = this.add.text(300, 16, 
             'TIME LEFT: ' + `${this.initialTime.toString()}`,
             colorful_text_style
@@ -949,8 +949,13 @@ class GamePlay extends Phaser.Scene {
         jump_button = this.add.image(288, 750, 'jump').setScale(4.5).setInteractive();
         left_button = this.add.image(150, 750, 'left').setScale(4).setAlpha(0.7).setInteractive();
         right_button = this.add.image(426, 750, 'right').setScale(4).setAlpha(0.7).setInteractive();
-        var pause_button = this.add.image(40, 790, 'pause').setScale(3).setInteractive();
+        if (!mobilePlayOn) {
+            jump_button.visible = false;
+            left_button.visible = false;
+            right_button.visible = false;
+        }
 
+        var pause_button = this.add.image(40, 790, 'pause').setScale(3).setInteractive();
         pause_button.on('pointerdown', () => {
             this.sound.play("select");
             gamePaused = true;
@@ -986,7 +991,7 @@ class GamePlay extends Phaser.Scene {
             this.scene.pause();
             this.scene.launch('PauseGame');
         }
-
+        console.log(mobilePlayOn);
         // Player movement
         if (timeSinceHitByBanana < 35) {
             timeSinceHitByBanana++;
@@ -995,7 +1000,7 @@ class GamePlay extends Phaser.Scene {
         else {
             // Speed penalty applied when player walks over mushed apple
             var speedPenalty = 1;
-            if (this.physics.overlap(player, apples)) {
+            if (this.physics.overlap(player, mushyApples)) {
                 speedPenalty = 0.7;
             }
 
@@ -1279,7 +1284,7 @@ function turnAppleToMush(apple) {
         apple.setTexture('golden-mush');
     }
     else { apple.setTexture('mush'); }
-    setTimeout(() => { apples.remove(apple); }, 10);
+    timeouts.push(setTimeout(() => { apples.remove(apple); }, 10));
     
 }
 
