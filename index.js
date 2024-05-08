@@ -1111,9 +1111,9 @@ function spawnApple() {
         }
         else {
             // Recycles apple objects which have already been caught in order to save memory & reduce lag
-            console.log("Total: "+apples.children.entries.length);
-            console.log("Recycle: "+applesToRecycle.length);
-            console.log("Mushy: "+mushyApples.children.entries.length);
+            // console.log("Total: "+apples.children.entries.length);
+            // console.log("Recycle: "+applesToRecycle.length);
+            // console.log("Mushy: "+mushyApples.children.entries.length);
             if (applesToRecycle.length >= 1) {
                 apple = applesToRecycle.pop();
                 apple.setTexture('apple');
@@ -1140,8 +1140,12 @@ function spawnApple() {
  * Spawns a monkey on either the left or right side of the tree.
  */
 function spawnMonkey() {
-    var monkeys = [monkey_right, monkey_center, monkey_left];
-    var monkeyToSpawn = monkeys[Phaser.Math.Between(0, 2)];
+    var monkeys = [monkey_right, monkey_left];
+    if (level >= 15) {
+        monkeys = [monkey_right, monkey_center, monkey_left];
+    }
+
+    var monkeyToSpawn = monkeys[Phaser.Math.Between(0, monkeys.length-1)];
     if (!gamePaused) {
         if (!monkeyToSpawn.visible) {
             monkeyToSpawn.visible = true;
@@ -1275,7 +1279,7 @@ function turnAppleToMush(apple) {
         apple.setTexture('golden-mush');
     }
     else { apple.setTexture('mush'); }
-    setInterval(() => { apples.remove(apple); }, 10);
+    setTimeout(() => { apples.remove(apple); }, 10);
     
 }
 
