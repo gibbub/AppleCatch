@@ -49,13 +49,13 @@ var gameplayMusic;
  * Sets up first level; all game vars are set to their defaults
  */
 function initializeGame() {
-    score = 100;
+    score = 0;
     excessApples = 0;
-    level = 15;
+    level = 1;
     applesNeeded = 8;
     appleSpawnInterval = 2000;
     appleGravityY = 0;
-    monkeySpawnInterval = 1000;
+    monkeySpawnInterval = 100000;
     gamePaused = false;
     continueAfterLevelWin = false;
     continueAfterUpgradeWin = false;
@@ -933,6 +933,7 @@ class GamePlay extends Phaser.Scene {
         mushyApples = this.physics.add.group();
         appleIntervalID = setInterval(spawnApple, appleSpawnInterval);
         bananas = this.physics.add.group();
+        timeSinceHitByBanana = 100;
         
         // Set colliders
         layer.setCollisionByExclusion([-1]);
@@ -991,7 +992,7 @@ class GamePlay extends Phaser.Scene {
             this.scene.pause();
             this.scene.launch('PauseGame');
         }
-        console.log(mobilePlayOn);
+
         // Player movement
         if (timeSinceHitByBanana < 35) {
             timeSinceHitByBanana++;
