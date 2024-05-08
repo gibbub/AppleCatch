@@ -27,23 +27,25 @@ var appleSpawnInterval = 2000;
 var monkeySpawnInterval = 30000;
 
 // Upgrades
-var speedUpgrade;
-var luckUpgrade;
-var basketUpgrade;
+var speedUpgrade = new Upgrade("speed", 5, 0, 200, 5, "assets/level_end/boots.PNG");
+var luckUpgrade = new Upgrade("luck", 7, 0, 1, 4, "assets/level_end/luck.PNG");
+var basketUpgrade = new Upgrade("basket", 12, 0, 0, 2, "assets/level_end/basket.PNG");
 
 // Time-related vars
 var gamePaused = false;
 var timeSinceHitByBanana = 100;
-var timelimit = 30;
+var timeLimit = 30;
 var countdownText;
 var timedEvent;
 var appleIntervalID, monkeyIntervalID, levelEndIntervalID;
 var timeouts = [];
 
-// Mobile Play & Sound
+// Mobile Play, Sound, & User Input
 var mobilePlayOn = false;
 var jump_button, left_button, right_button;
 var gameplayMusic;
+var userInput = document.getElementById("ctext");
+var devModeOn = false;
 
 /**
  * Sets up first level; all game vars are set to their defaults
@@ -57,6 +59,7 @@ function initializeGame() {
     appleGravityY = 0;
     monkeySpawnInterval = 100000;
     gamePaused = false;
+    devModeOn = false;
     continueAfterLevelWin = false;
     continueAfterUpgradeWin = false;
 
@@ -86,11 +89,11 @@ function setUpNextLevel() {
 
     applesNeeded = getApplesNeeded();
     var numApplesToSpawn = applesNeeded - Math.floor(level/5) + 6;
-    appleSpawnInterval = 1000 * Phaser.Math.RoundTo(timelimit/numApplesToSpawn, -2);
+    appleSpawnInterval = 1000 * Phaser.Math.RoundTo(timeLimit/numApplesToSpawn, -2);
     appleGravityY = Math.floor(5*(level-1));
 
     var numMonkeysToSpawn = level == 2 ? 1 : Math.floor(level/3);
-    monkeySpawnInterval = 1000 * Phaser.Math.RoundTo(timelimit/(numMonkeysToSpawn+1), -2);
+    monkeySpawnInterval = 1000 * Phaser.Math.RoundTo(timeLimit/(numMonkeysToSpawn+1), -2);
 }
 
 /**
@@ -98,6 +101,189 @@ function setUpNextLevel() {
  */
 function getApplesNeeded() {
     return applesNeeded + Math.floor(level/5) + 2;
+}
+
+class DevMode extends Phaser.Scene {
+
+    constructor () {
+        super('DevMode');
+        this.counter = 0;
+        this.variables = new Map([
+            ["applesNeeded", [applesNeeded, "Integer"]],
+            ["appleGravityY", [appleGravityY,"Integer"]],
+            ["appleSpawnInterval", [appleSpawnInterval, "Milliseconds"]],
+            ["monkeySpawnInterval", [monkeySpawnInterval, "Milliseconds"]],
+            ["score", [score, "Integer"]],
+            ["timeLimit", [timeLimit, "Seconds"]],
+            ["speed", [speedUpgrade.effect, "Integer"]],
+            ["luck", [luckUpgrade.effect, "Integer"]],
+            ["basket", [basketUpgrade.degree, "ONLY 0, 1, or 2"]]
+        ]);
+        this.cmdMessage = null;
+    }
+
+    preload() {
+    
+    }
+
+    create() {
+        this.add.rectangle(288, 416, 500, 500, 0x000000, 0.8).setOrigin(0.5);
+        var dev_mode_text_style = {
+            fontSize: '16px',
+            color: '#fff000',
+            align: 'left',
+            wordWrap: { width: 480 }
+        };
+        
+        this.add.text(55, 180, 
+            "Welcome to DevMode." 
+            + "\nSet any of the variables below by typing: [VARIABLE_NAME] [VALUE] without the brackets."
+            + "\n~~~",
+        {
+            fontSize: '16px',
+            align: 'left',
+            lineSpacing: 5,
+            wordWrap: { width: 480 }
+        });
+
+        var textVariables = [];
+        var i = 0;
+        for (const [key, value] of this.variables) {
+            textVariables.push(this.add.text(55, 280+i*25, key + " = " + value[0], dev_mode_text_style));
+            var line = textVariables[i];
+            this.add.text(370, 280+i*25, value[1], { fontSize: '14px' });
+            this.variables.get(key)[1] = line;
+            i++;
+        }
+
+        this.add.text(55, 530, "Type RESET to reset all values. \nPress ESC to exit DevMode.", { lineSpacing: 5 });
+
+        this.cmdMessage = this.add.text(55, 580, "Type a command, then hit enter", { color: "#0fff00" });
+    
+        userInput.style.visibility = 'visible';
+        userInput.style.left = '10%';
+        userInput.style.width = 100*(this.game.canvas.clientWidth/document.body.clientWidth)-22 + '%';
+        userInput.style.top = 77*(this.game.canvas.clientHeight/document.body.clientHeight) + '%';
+    }
+
+    update() {
+
+        this.input.keyboard.on('keydown-ENTER', () => {
+             if (this.counter == 0) {
+                 this.counter++;
+                 this.cmdMessage._text = this.processInput(userInput.value);
+                 this.cmdMessage.updateText();
+                 userInput.value = "";
+             }
+         });
+        this.input.keyboard.on('keyup-ENTER', () => {
+            this.counter = 0;
+        });
+
+        this.input.keyboard.on('keydown-ESC', () => {
+            userInput.style.visibility = 'hidden';
+            devModeOn = false;
+            gameplayMusic.resume();
+        });
+        if (!devModeOn) {
+            this.scene.stop();
+            game.scene.resume('GamePlay');
+        }
+
+        userInput.style.width = 100*(this.game.canvas.clientWidth/document.body.clientWidth)-22 + '%';
+        userInput.style.top = 75*(this.game.canvas.clientHeight/document.body.clientHeight) + '%';
+    }
+
+    processInput(s) {
+        var cmd = s.split(" ");
+
+        if (cmd.length > 2) {
+            return "INVALID COMMAND: You cannot exceed 2 inputs"
+        }
+
+        if (cmd.length == 1) {
+            if (cmd[0] == "reset" || cmd[0] == "RESET") {
+                for (const [key, value] of this.variables) {
+                    value[1]._text = key + " = " + value[0];
+                    value[1].style.color = "#ffffff";
+                    value[1].updateText();
+                }
+                applesNeeded = this.variables.get("applesNeeded")[0];
+                appleGravityY = this.variables.get("appleGravityY")[0];
+                appleSpawnInterval = this.variables.get("appleSpawnInterval")[0];
+                monkeySpawnInterval = this.variables.get("monkeySpawnInterval")[0];
+                score = this.variables.get("score")[0];
+                timeLimit = this.variables.get("timeLimit")[0];
+                speedUpgrade.effect = this.variables.get("speed")[0];
+                luckUpgrade.effect = this.variables.get("luck")[0];
+                basketUpgrade.degree = this.variables.get("basket")[0];
+
+                return "All values have been reset"
+            }
+            return "INVALID COMMAND"
+        }
+
+        if (!/^\d+$/.test(cmd[1])) {
+            return "INVALID COMMAND: Second input must be a number"
+        }
+
+        if (!this.variables.has(cmd[0])) {
+            return "INVALID COMMAND: Your first input is not a variable";
+        }
+
+        var key = cmd[0];
+        var value = cmd[1];
+
+        switch(key) {
+            case "applesNeeded":
+                applesNeeded = value;
+                break;
+
+            case "appleGravityY":
+                appleGravityY = value;
+                break;
+
+            case "appleSpawnInterval":
+                appleSpawnInterval = value;
+                break;
+
+            case "monkeySpawnInterval":
+                monkeySpawnInterval = value;
+                break;
+
+            case "score":
+                score = value;
+                break;
+
+            case "timeLimit":
+                timeLimit = value;
+                break;
+
+            case "speed":
+                speedUpgrade.effect = value;
+                break;
+
+            case "luck":
+                luckUpgrade.effect = value;
+                break;
+
+            case "basket":
+                if (value > 2 || value < 0) {
+                    return "INVALID COMMAND: basket only takes 0, 1, or 2"
+                }
+                basketUpgrade.degree = value;
+                break;
+
+            default:
+                return "INVALID COMMAND: First input is not a variable"
+        }
+
+        this.variables.get(key)[1]._text = key + " = " + value;
+        this.variables.get(key)[1].style.color = "#0fff00";
+        this.variables.get(key)[1].updateText();
+
+        return "Set " + key + " to " + value;
+    }
 }
 
 /**
@@ -875,7 +1061,7 @@ class GamePlay extends Phaser.Scene {
         scoreText = this.add.text(16, 16, 'SCORE: ' + score + '/' + applesNeeded, colorful_text_style);
         this.add.text(16, 45, 'Level ' + level, colorful_text_style);
 
-        this.initialTime = timelimit;
+        this.initialTime = timeLimit;
         countdownText = this.add.text(300, 16, 
             'TIME LEFT: ' + `${this.initialTime.toString()}`,
             colorful_text_style
@@ -944,6 +1130,7 @@ class GamePlay extends Phaser.Scene {
 
         // Controls
         cursors = this.input.keyboard.createCursorKeys();
+        this.input.keyboard.removeCapture('SPACE');
 
         // Mobile Play
         jump_button = this.add.image(288, 750, 'jump').setScale(4.5).setInteractive();
@@ -985,6 +1172,15 @@ class GamePlay extends Phaser.Scene {
             gameplayMusic.pause();
             this.scene.pause();
             this.scene.launch('PauseGame');
+        }
+
+        this.input.keyboard.on('keydown-PERIOD', () => {
+            devModeOn = true;
+        });
+        if (devModeOn) {
+            gameplayMusic.pause();
+            this.scene.pause();
+            this.scene.launch('DevMode');
         }
 
         // Player movement
@@ -1099,7 +1295,7 @@ function makePlayerAnimations(s, playerSprite) {
  * Determines a random coordinate to spawn a regular or golden apple.
  */
 function spawnApple() {
-    if (!gamePaused) {
+    if (!gamePaused && !devModeOn) {
         var xCoord = Phaser.Math.Between(125, 475);
         var yCoord = Phaser.Math.Between(100, 400);
         var randomRoll = Phaser.Math.Between(0, 100);
@@ -1111,9 +1307,9 @@ function spawnApple() {
         }
         else {
             // Recycles apple objects which have already been caught in order to save memory & reduce lag
-            console.log("Total: "+apples.children.entries.length);
-            console.log("Recycle: "+applesToRecycle.length);
-            console.log("Mushy: "+mushyApples.children.entries.length);
+            // console.log("Total: "+apples.children.entries.length);
+            // console.log("Recycle: "+applesToRecycle.length);
+            // console.log("Mushy: "+mushyApples.children.entries.length);
             if (applesToRecycle.length >= 1) {
                 apple = applesToRecycle.pop();
                 apple.setTexture('apple');
@@ -1353,6 +1549,6 @@ var config = {
             debug: false
         }
     },
-    scene: [StartScreen, HowToPlay, GamePlay, LevelEnd, GameOver, GameWin, PauseGame]
+    scene: [StartScreen, HowToPlay, GamePlay, LevelEnd, GameOver, GameWin, PauseGame, DevMode]
 };
 var game = new Phaser.Game(config);
