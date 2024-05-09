@@ -1256,7 +1256,7 @@ function bananaStrike(player, banana) {
             player.setVelocityY(-1*player.y);   
             if (score > 1) {
                 // When player is hit by banana, they lose an apple
-                var lostApple = apples.create(player.getCenter().x, player.getCenter().y, 'mush')
+                var lostApple = mushyApples.create(player.getCenter().x, player.getCenter().y, 'mush')
                     .setScale(3)      
                     .setVelocityY(Phaser.Math.Between(-500,-500))
                     .setVelocityX(Phaser.Math.Between(-500,500))
