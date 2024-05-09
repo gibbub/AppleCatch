@@ -242,12 +242,44 @@ class HowToPlay extends Phaser.Scene {
         this.add.image(288, 450, 'how-to-play').setScale(5);
         var exit_button = this.add.image(80, 140, 'exit-button').setScale(3).setInteractive();
 
+        var howto_text_style = {
+            fontFamily: '"Press Start"',
+            fontSize: '16px',
+            fill: '#4a1c1a',
+            stroke: '#c17f38',
+            strokeThickness: 3,
+            align: 'center',
+            wordWrap: { width: 350 }
+        };
+
         var instructions =  
         "Grandma needs apples to make apple pies.\n" +
         "How many can you catch?\n\n" +
         "Use extra apples to buy upgrades, or let them carry over to the next level.\n" +
         "Beware of mischevious critters who try to distract you...";
-        this.make.text({ x: 288, y: 345, text: instructions, origin: { x: 0.5, y: 0.5 }, style: howto_text_style });
+        this.add.text(288, 325, instructions, 
+            {
+                fontFamily: 'Press Start',
+                fontSize: '14px',
+                fill: '#4a1c1a',
+                stroke: '#c17f38',
+                strokeThickness: 3,
+                align: 'center',
+                lineSpacing: 3,
+                wordWrap: { width: 390 }
+            }
+        ).setOrigin(0.5);
+        this.add.text(360, 490,
+            "WIN by purchasing all upgrades and/or reaching level 30!",
+            {
+                fontFamily: 'Press Start',
+                fontSize: '12px',
+                fill: '#4a1c1a',
+                align: 'left',
+                lineSpacing: 3,
+                wordWrap: { width: 255 }
+            }
+        ).setOrigin(0.5).setAlpha(0.4);
 
         // Exit Button function
         exit_button.on('pointerdown', () => {
@@ -400,8 +432,6 @@ class LevelEnd extends Phaser.Scene {
     }
 
     preload() {
-        // this.load.audio('stinger', [ 'assets/sounds/stinger.mp3' ]);
-        // this.load.audio('upgrade', [ 'assets/sounds/upgrade.mp3' ]);
         this.load.image('level-end-board', 'assets/level_end/level_end_board.PNG');
         this.load.image('boots', speedUpgrade.sprite);
         this.load.image('luck', luckUpgrade.sprite);
@@ -1310,15 +1340,7 @@ function onEvent() {
 }
 
 // Text styles
-var howto_text_style = {
-    fontFamily: '"Press Start"',
-    fontSize: '16px',
-    fill: '#4a1c1a',
-    stroke: '#c17f38',
-    strokeThickness: 3,
-    align: 'center',
-    wordWrap: { width: 350 }
-};
+
 var colorful_text_style = {
     fontFamily: '"Press Start"',
     fontSize: '20px',
